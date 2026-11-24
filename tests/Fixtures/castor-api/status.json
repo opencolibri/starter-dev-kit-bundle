@@ -1,0 +1,1 @@
+{"shop":{"name":"Maison Roastery"},"dataset":"roastery","theme":{"name":"roastery","header":{"menu":"below","search":"inline"}},"locales":{"default":"fr_FR","enabled":["en_US","fr_FR"]},"currencies":["EUR","USD"],"plugins":["altcha","refund"]}

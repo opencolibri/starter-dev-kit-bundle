@@ -1,0 +1,11 @@
+{# Shown instead of the cards when castor-api cannot read the shop. #}
+{% if dev_kit_state() is null %}
+    <twig:shadcn:Alert variant="destructive">
+        {{ ux_icon('lucide:plug-zap', {'aria-hidden': 'true'}) }}
+        <twig:shadcn:Alert:Title>{{ 'opencolibri_dev_kit.ui.unavailable'|trans }}</twig:shadcn:Alert:Title>
+        <twig:shadcn:Alert:Description>
+            <p>{{ 'opencolibri_dev_kit.ui.unavailable_description'|trans }}</p>
+            <pre class="mt-2 font-mono text-xs whitespace-pre-wrap">{{ dev_kit_error() }}</pre>
+        </twig:shadcn:Alert:Description>
+    </twig:shadcn:Alert>
+{% endif %}

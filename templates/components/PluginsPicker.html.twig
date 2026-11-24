@@ -1,0 +1,41 @@
+{# Read before the nested components: inside <twig:shadcn:Card>, "this" is the card. #}
+{% set this_installed = this.installed %}
+{% set this_plan = this.plan %}
+{% set this_results = this.results %}
+{% set installed = this_installed %}
+{% set results = this_results %}
+<div {{ attributes }}>
+    <twig:shadcn:Card>
+        <twig:shadcn:Card:Header>
+            <twig:shadcn:Card:Title>{{ 'opencolibri_dev_kit.ui.plugins'|trans }}</twig:shadcn:Card:Title>
+            <twig:shadcn:Card:Description>{{ 'opencolibri_dev_kit.ui.plugins_description'|trans }}</twig:shadcn:Card:Description>
+        </twig:shadcn:Card:Header>
+        <twig:shadcn:Card:Content class="flex flex-col gap-4">
+            <div class="relative lg:max-w-md">
+                {{ ux_icon('lucide:search', {class: 'pointer-events-none absolute start-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground', 'aria-hidden': 'true'}) }}
+                <input type="search" value="{{ query }}" data-model="debounce(150)|query" placeholder="{{ 'opencolibri_dev_kit.ui.search_plugins'|trans }}" aria-label="{{ 'opencolibri_dev_kit.ui.search_plugins'|trans }}" class="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30 ps-8">
+            </div>
+            <ul class="grid gap-3 lg:grid-cols-2">
+                {% for plugin in results %}
+                    {% set locked = plugin.name in installed and not plugin.removable %}
+                    <li>
+                        <label class="flex h-full items-start gap-3 rounded-lg border p-3 text-sm has-[:checked]:border-primary/50 has-[:checked]:bg-primary/5 {{ locked ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-accent' }}">
+                            <input type="checkbox" role="switch" name="plugins[]" value="{{ plugin.name }}" data-model="selected[]"{{ plugin.name in selected ? ' checked' }}{{ locked ? ' disabled' }} class="mt-0.5 size-4 shrink-0 rounded-[4px] border border-input accent-primary">
+                            <span class="flex min-w-0 flex-1 flex-col gap-0.5">
+                                <span class="flex flex-wrap items-center gap-2 font-medium">
+                                    <code class="font-mono">{{ plugin.name }}</code>
+                                    {% if plugin.name in installed %}<twig:shadcn:Badge variant="secondary">{{ 'opencolibri_dev_kit.ui.installed'|trans }}</twig:shadcn:Badge>{% endif %}
+                                    {% if locked %}<twig:shadcn:Badge variant="outline">{{ 'opencolibri_dev_kit.ui.not_removable'|trans }}</twig:shadcn:Badge>{% endif %}
+                                </span>
+                                <span class="text-muted-foreground">{{ plugin.description }}</span>
+                            </span>
+                        </label>
+                    </li>
+                {% else %}
+                    <li class="p-3 text-sm text-muted-foreground lg:col-span-2">{{ 'opencolibri_dev_kit.ui.no_plugin_found'|trans({'%query%': query}) }}</li>
+                {% endfor %}
+            </ul>
+            {{ component('dev_kit:plan', {plan: this_plan, error: error}) }}
+        </twig:shadcn:Card:Content>
+    </twig:shadcn:Card>
+</div>

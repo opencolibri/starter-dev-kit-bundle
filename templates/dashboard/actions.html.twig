@@ -1,0 +1,10 @@
+{# Dashboard header actions: the storefront of the local shop, and the history of the changes. #}
+{% from '@SyliusShadcnAdminUi/shared/helper/ui.html.twig' import button_class %}
+<div class="flex flex-wrap items-center gap-2">
+    <a href="{{ path('opencolibri_dev_kit_history') }}" class="{{ button_class('outline') }}">
+        {{ ux_icon('lucide:history', {'aria-hidden': 'true', 'data-icon': 'inline-start'}) }}{{ 'opencolibri_dev_kit.ui.history'|trans }}
+    </a>
+    <a href="{{ dev_kit_storefront_url() }}" target="_blank" rel="noopener" class="{{ button_class('default') }}">
+        {{ ux_icon('lucide:external-link', {'aria-hidden': 'true', 'data-icon': 'inline-start'}) }}{{ 'opencolibri_dev_kit.ui.open_storefront'|trans }}
+    </a>
+</div>

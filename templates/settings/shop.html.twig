@@ -1,0 +1,4 @@
+{% set state = dev_kit_state() %}
+{% if state is not null %}
+    {{ component('DevKit:ShopNameEditor', {state: state}) }}
+{% endif %}

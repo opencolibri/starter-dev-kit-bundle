@@ -1,0 +1,35 @@
+{# The states dev-kit:apply brought the shop to, the latest first, each with the way back to it. #}
+{% set state = dev_kit_state() %}
+{% set history = dev_kit_history() %}
+<twig:shadcn:Card>
+    <twig:shadcn:Card:Content class="p-0">
+        {% if history is empty %}
+            <p class="p-6 text-sm text-muted-foreground">{{ 'opencolibri_dev_kit.ui.no_history'|trans }}</p>
+        {% else %}
+            <ol class="flex flex-col divide-y">
+                {% for entry in history %}
+                    {% set target = entry.state %}
+                    <li class="flex flex-col gap-2 p-4 text-sm">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="font-medium">{{ entry.steps|join(' · ')|default('opencolibri_dev_kit.ui.change'|trans) }}</span>
+                            <time class="text-xs text-muted-foreground" datetime="{{ entry.at }}">{{ entry.at|date('Y-m-d H:i') }}</time>
+                        </div>
+                        <p class="text-muted-foreground">
+                            {{ target.shop.name|default('') }}
+                            · {{ target.theme.name|default('default') }}
+                            {%- if target.dataset is defined %} · {{ target.dataset }}{% endif %}
+                            · {{ target.locales.enabled|default([])|join(', ') }}
+                            · {{ target.currencies|default([])|join(', ') }}
+                            {%- if target.plugins|default([]) is not empty %} · {{ target.plugins|join(', ') }}{% endif %}
+                        </p>
+                        {% if loop.first %}
+                            <div><twig:shadcn:Badge variant="secondary">{{ 'opencolibri_dev_kit.ui.current_state'|trans }}</twig:shadcn:Badge></div>
+                        {% elseif state is not null %}
+                            {{ component('DevKit:StateRestorer', {state: state, target: target}) }}
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ol>
+        {% endif %}
+    </twig:shadcn:Card:Content>
+</twig:shadcn:Card>

@@ -1,0 +1,18 @@
+{# Read before the nested components: inside <twig:shadcn:Card>, "this" is the card. #}
+{% set this_plan = this.plan %}
+<div {{ attributes }}>
+    <twig:shadcn:Card>
+        <twig:shadcn:Card:Header>
+            <twig:shadcn:Card:Title>{{ 'opencolibri_dev_kit.ui.shop_name'|trans }}</twig:shadcn:Card:Title>
+            <twig:shadcn:Card:Description>{{ 'opencolibri_dev_kit.ui.shop_name_description'|trans }}</twig:shadcn:Card:Description>
+        </twig:shadcn:Card:Header>
+        <twig:shadcn:Card:Content class="flex flex-col gap-3">
+            <div class="flex flex-col gap-1.5 sm:max-w-md">
+                <twig:shadcn:Label for="shop-name">{{ 'opencolibri_dev_kit.ui.name'|trans }}</twig:shadcn:Label>
+                {# A plain input: a model bound on a nested component would bind to that component. #}
+                <input id="shop-name" type="text" value="{{ name }}" data-model="debounce(400)|name" required class="h-8 w-full min-w-0 rounded-lg border border-input bg-transparent px-2.5 py-1 text-base transition-colors outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm dark:bg-input/30">
+            </div>
+            {{ component('dev_kit:plan', {plan: this_plan, error: error}) }}
+        </twig:shadcn:Card:Content>
+    </twig:shadcn:Card>
+</div>

@@ -1,0 +1,8 @@
+{# Loading the dataset into the shop: the plan shows once asked for, then runs like any change. #}
+{% set dataset = hookable_metadata.context.dataset %}
+{% set state = dev_kit_state() %}
+{% if state is not null %}
+    {{ component('DevKit:DatasetLoader', {state: state, dataset: dataset.slug}) }}
+{% else %}
+    {% include '@OpenColibriStarterDevKit/shared/unavailable.html.twig' %}
+{% endif %}

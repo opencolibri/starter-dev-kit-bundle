@@ -1,0 +1,59 @@
+{
+    "name": "opencolibri/starter-dev-kit-bundle",
+    "description": "The dev-kit admin: build the local Sylius shop little by little, each change showing its plan and cost before it runs (Sylius Shadcn Admin UI)",
+    "type": "symfony-bundle",
+    "license": "MIT",
+    "keywords": [
+        "sylius",
+        "shadcn",
+        "admin",
+        "dev-kit"
+    ],
+    "homepage": "https://github.com/opencolibri/colibri-starter",
+    "authors": [
+        {
+            "name": "Loïc Frémont",
+            "email": "lfremont@jolicode.com"
+        },
+        {
+            "name": "Jérôme Gangneux",
+            "email": "jerome@gangneux.net"
+        }
+    ],
+    "require": {
+        "php": ">=8.3",
+        "knplabs/knp-menu-bundle": "^3.0",
+        "opencolibri/starter-core": "self.version",
+        "opencolibri/starter-datasets": "self.version",
+        "opencolibri/starter-themes": "self.version",
+        "sylius/admin-ui": "^0.14",
+        "sylius/shadcn-admin-ui": "^0.14@dev",
+        "sylius/twig-hooks": "^0.14",
+        "sylius/ui-translations": "^0.14",
+        "symfony/framework-bundle": "^7.4",
+        "symfony/http-client": "^7.4|^8.0",
+        "symfony/intl": "^7.4|^8.0",
+        "symfony/security-bundle": "^7.4",
+        "symfony/ux-live-component": "^2.30 || ^3.5",
+        "symfony/yaml": "^7.4|^8.0"
+    },
+    "require-dev": {
+        "symfony/browser-kit": "^7.4|^8.0",
+        "symfony/css-selector": "^7.4|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "OpenColibri\\Starter\\DevKitBundle\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "OpenColibri\\Starter\\DevKitBundle\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "0.1-dev"
+        }
+    }
+}

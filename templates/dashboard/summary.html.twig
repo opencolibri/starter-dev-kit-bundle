@@ -1,0 +1,91 @@
+{#
+ # What the shop runs now, one card per settings page, each linking to its page. The changes happen on the pages:
+ # the dashboard only reads.
+ #}
+{% set state = dev_kit_state() %}
+{% if state is not null %}
+    {% set catalog = dev_kit_catalog() %}
+    {% set theme = catalog.themes|filter(t => t.name == state.theme.name|default(null))|first %}
+    {% set dataset = catalog.datasets|filter(d => d.slug == state.dataset|default(null))|first %}
+    {% set header = state.theme.header|default(null) %}
+    {% from '@SyliusShadcnAdminUi/shared/helper/ui.html.twig' import button_class %}
+    {% set link_class = button_class('outline', 'sm') %}
+
+
+    <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <twig:shadcn:Card class="h-full">
+            <twig:shadcn:Card:Header>
+                <twig:shadcn:Card:Title class="flex items-center gap-2">{{ ux_icon('lucide:paintbrush', {class: 'size-4 text-muted-foreground', 'aria-hidden': 'true'}) }}{{ 'opencolibri_dev_kit.ui.storefront'|trans }}</twig:shadcn:Card:Title>
+            </twig:shadcn:Card:Header>
+            <twig:shadcn:Card:Content class="flex flex-1 flex-col gap-3 text-sm">
+                {% if theme %}
+                    <span class="block overflow-hidden rounded-md bg-muted">
+                        <img src="{{ path('opencolibri_dev_kit_theme_preview', {theme: theme.name, scheme: 'light'}) }}" alt="" width="480" height="300" loading="lazy" class="aspect-[8/5] w-full object-cover dark:hidden">
+                        <img src="{{ path('opencolibri_dev_kit_theme_preview', {theme: theme.name, scheme: 'dark'}) }}" alt="" width="480" height="300" loading="lazy" class="hidden aspect-[8/5] w-full object-cover dark:block">
+                    </span>
+                {% endif %}
+                <p><span class="font-medium">{{ theme.label|default(state.theme.name|default('opencolibri_dev_kit.ui.theme_unknown'|trans)) }}</span>
+                    {%- if header %}<br><span class="text-muted-foreground">{{ ('opencolibri_dev_kit.ui.header_menu_' ~ header.menu)|trans }} · {{ ('opencolibri_dev_kit.ui.header_search_' ~ header.search)|trans }}</span>{% endif %}</p>
+                <div class="mt-auto"><a href="{{ path('opencolibri_dev_kit_settings', {page: 'storefront'}) }}" class="{{ link_class }}">{{ 'opencolibri_dev_kit.ui.change_it'|trans }}</a></div>
+            </twig:shadcn:Card:Content>
+        </twig:shadcn:Card>
+
+        <twig:shadcn:Card class="h-full">
+            <twig:shadcn:Card:Header>
+                <twig:shadcn:Card:Title class="flex items-center gap-2">{{ ux_icon('lucide:package', {class: 'size-4 text-muted-foreground', 'aria-hidden': 'true'}) }}{{ 'opencolibri_dev_kit.ui.catalog'|trans }}</twig:shadcn:Card:Title>
+            </twig:shadcn:Card:Header>
+            <twig:shadcn:Card:Content class="flex flex-1 flex-col gap-3 text-sm">
+                {% set preview = dataset ? dev_kit_dataset_preview(dataset.slug) : null %}
+                {% if preview %}<img src="{{ preview }}" alt="" width="240" height="320" loading="lazy" class="aspect-[8/5] w-full rounded-md bg-muted object-cover">{% endif %}
+                <p>
+                    {%- if state.dataset is not defined -%}
+                        <span class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.catalog_unknown'|trans }}</span>
+                    {%- elseif state.dataset == 'sylius' -%}
+                        <span class="font-medium">{{ 'opencolibri_dev_kit.ui.sylius_fixtures'|trans }}</span>
+                    {%- else -%}
+                        <span class="font-medium">{{ dataset.name|default(state.dataset) }}</span>
+                        {%- if dataset.productCount is defined %}<br><span class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.product_count'|trans({'%count%': dataset.productCount}) }}</span>{% endif %}
+                    {%- endif -%}
+                </p>
+                <div class="mt-auto"><a href="{{ path('opencolibri_dev_kit_settings', {page: 'catalog'}) }}" class="{{ link_class }}">{{ 'opencolibri_dev_kit.ui.change_it'|trans }}</a></div>
+            </twig:shadcn:Card:Content>
+        </twig:shadcn:Card>
+
+        <div class="flex flex-col gap-6">
+            <twig:shadcn:Card>
+                <twig:shadcn:Card:Header>
+                    <twig:shadcn:Card:Title class="flex items-center gap-2">{{ ux_icon('lucide:store', {class: 'size-4 text-muted-foreground', 'aria-hidden': 'true'}) }}{{ 'opencolibri_dev_kit.ui.shop'|trans }}</twig:shadcn:Card:Title>
+                </twig:shadcn:Card:Header>
+                <twig:shadcn:Card:Content class="flex items-center justify-between gap-3 text-sm">
+                    <span class="font-medium">{{ state.shop.name|default('') }}</span>
+                    <a href="{{ path('opencolibri_dev_kit_settings', {page: 'shop'}) }}" class="{{ link_class }}">{{ 'opencolibri_dev_kit.ui.change_it'|trans }}</a>
+                </twig:shadcn:Card:Content>
+            </twig:shadcn:Card>
+
+            <twig:shadcn:Card>
+                <twig:shadcn:Card:Header>
+                    <twig:shadcn:Card:Title class="flex items-center gap-2">{{ ux_icon('lucide:languages', {class: 'size-4 text-muted-foreground', 'aria-hidden': 'true'}) }}{{ 'opencolibri_dev_kit.ui.locales_and_currencies'|trans }}</twig:shadcn:Card:Title>
+                </twig:shadcn:Card:Header>
+                <twig:shadcn:Card:Content class="flex items-center justify-between gap-3 text-sm">
+                    <span class="flex flex-wrap gap-1.5">
+                        {% for code in state.locales.enabled|default([]) %}<twig:shadcn:Badge variant="{{ code == state.locales.default|default ? 'default' : 'secondary' }}">{{ code }}</twig:shadcn:Badge>{% endfor %}
+                        {% for code in state.currencies|default([]) %}<twig:shadcn:Badge variant="outline">{{ code }}</twig:shadcn:Badge>{% endfor %}
+                    </span>
+                    <a href="{{ path('opencolibri_dev_kit_settings', {page: 'locales'}) }}" class="{{ link_class }}">{{ 'opencolibri_dev_kit.ui.change_it'|trans }}</a>
+                </twig:shadcn:Card:Content>
+            </twig:shadcn:Card>
+
+            <twig:shadcn:Card>
+                <twig:shadcn:Card:Header>
+                    <twig:shadcn:Card:Title class="flex items-center gap-2">{{ ux_icon('lucide:puzzle', {class: 'size-4 text-muted-foreground', 'aria-hidden': 'true'}) }}{{ 'opencolibri_dev_kit.ui.plugins'|trans }}</twig:shadcn:Card:Title>
+                </twig:shadcn:Card:Header>
+                <twig:shadcn:Card:Content class="flex items-center justify-between gap-3 text-sm">
+                    <span class="flex flex-wrap gap-1.5">
+                        {% for plugin in state.plugins|default([]) %}<twig:shadcn:Badge variant="secondary"><code class="font-mono">{{ plugin }}</code></twig:shadcn:Badge>{% else %}<span class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.no_plugins'|trans }}</span>{% endfor %}
+                    </span>
+                    <a href="{{ path('opencolibri_dev_kit_settings', {page: 'plugins'}) }}" class="{{ link_class }}">{{ 'opencolibri_dev_kit.ui.change_it'|trans }}</a>
+                </twig:shadcn:Card:Content>
+            </twig:shadcn:Card>
+        </div>
+    </div>
+{% endif %}

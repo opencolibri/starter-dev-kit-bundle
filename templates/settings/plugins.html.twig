@@ -1,0 +1,4 @@
+{% set state = dev_kit_state() %}
+{% if state is not null %}
+    {{ component('DevKit:PluginsPicker', {state: state, plugins: dev_kit_catalog().plugins}) }}
+{% endif %}

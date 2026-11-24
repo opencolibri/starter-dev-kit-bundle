@@ -1,0 +1,46 @@
+{#
+ # The datasets the shop can load, each opening its page: its products, and the button that loads it.
+ #}
+{% set state = dev_kit_state() %}
+{% if state is not null %}
+    {% set current = state.dataset|default(null) %}
+    <twig:shadcn:Card>
+        <twig:shadcn:Card:Header>
+            <twig:shadcn:Card:Title>{{ 'opencolibri_dev_kit.ui.catalog'|trans }}</twig:shadcn:Card:Title>
+            <twig:shadcn:Card:Description>{{ 'opencolibri_dev_kit.ui.catalog_description'|trans }}</twig:shadcn:Card:Description>
+        </twig:shadcn:Card:Header>
+        <twig:shadcn:Card:Content class="flex flex-col gap-4">
+            {% if current is null %}
+                <p class="text-sm text-muted-foreground">{{ 'opencolibri_dev_kit.ui.catalog_unknown'|trans }}</p>
+            {% endif %}
+            <ul class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
+                {% for item in [{slug: 'sylius', name: 'opencolibri_dev_kit.ui.sylius_fixtures'|trans}]|merge(dev_kit_catalog().datasets) %}
+                    {% set preview = item.slug != 'sylius' ? dev_kit_dataset_preview(item.slug) : null %}
+                    <li>
+                        <a href="{{ path('opencolibri_dev_kit_dataset_show', {slug: item.slug}) }}"
+                           class="flex h-full flex-col gap-1.5 rounded-lg border p-1.5 transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none{{ item.slug == current ? ' border-primary ring-2 ring-primary/30' }}">
+                            {% if preview %}
+                                <img src="{{ preview }}" alt="" width="240" height="320" loading="lazy" class="aspect-[4/3] w-full rounded-md bg-muted object-cover">
+                            {% else %}
+                                <span class="flex aspect-[4/3] items-center justify-center rounded-md bg-muted text-muted-foreground">
+                                    {{ ux_icon('lucide:package', {class: 'size-6', 'aria-hidden': 'true'}) }}
+                                </span>
+                            {% endif %}
+                            <span class="flex flex-col gap-0.5 px-0.5">
+                                <span class="flex items-center justify-between gap-2 text-sm font-medium">
+                                    <span class="truncate">{{ item.name }}</span>
+                                    {% if item.slug == current %}
+                                        <twig:shadcn:Badge variant="secondary">{{ 'opencolibri_dev_kit.ui.current'|trans }}</twig:shadcn:Badge>
+                                    {% endif %}
+                                </span>
+                                <span class="text-xs text-muted-foreground">
+                                    {{- item.productCount is defined ? 'opencolibri_dev_kit.ui.product_count'|trans({'%count%': item.productCount}) : 'opencolibri_dev_kit.ui.demo_data'|trans -}}
+                                </span>
+                            </span>
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </twig:shadcn:Card:Content>
+    </twig:shadcn:Card>
+{% endif %}

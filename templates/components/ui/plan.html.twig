@@ -1,0 +1,49 @@
+{#-
+ # The plan of dev-kit:apply for the change of a card: its steps with their cost, the errors that block it, and the
+ # button that runs it (the "apply" LiveAction of the card). Renders nothing while the card changes nothing.
+ #}
+{%- props plan = null, error = null -%}
+{%- set costs = {
+    instant: ['secondary', 'opencolibri_dev_kit.cost.instant'],
+    short: ['secondary', 'opencolibri_dev_kit.cost.short'],
+    downtime: ['outline', 'opencolibri_dev_kit.cost.downtime'],
+    heavy: ['destructive', 'opencolibri_dev_kit.cost.heavy'],
+} -%}
+{{ component('dev_kit:message', {message: error}) }}
+{%- if plan -%}
+    <div {{ attributes.defaults({class: 'flex flex-col gap-3 rounded-lg border border-primary/40 bg-primary/5 p-3 text-sm'}) }}>
+        {% if plan.errors %}
+            {% for message in plan.errors %}
+                {{ component('dev_kit:message', {message: message}) }}
+            {% endfor %}
+        {% elseif not plan.steps %}
+            <p class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.nothing_to_change'|trans }}</p>
+        {% else %}
+            <ol class="flex flex-col gap-3">
+                {% for step in plan.steps %}
+                    {% set cost = costs[step.cost]|default(['secondary', step.costLabel]) %}
+                    <li class="flex flex-col gap-1">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="font-medium">{{ step.title }}</span>
+                            <twig:shadcn:Badge variant="{{ cost[0] }}">{{ cost[1]|trans }}</twig:shadcn:Badge>
+                        </div>
+                        {% if step.details %}
+                            <ul class="list-disc ps-5 text-xs text-muted-foreground">
+                                {% for detail in step.details %}<li>{{ detail }}</li>{% endfor %}
+                            </ul>
+                        {% endif %}
+                        <code class="font-mono text-xs break-all text-muted-foreground">{{ step.command }}</code>
+                    </li>
+                {% endfor %}
+            </ol>
+            {% set destructive = plan.steps|filter(step => step.destructive)|length > 0 %}
+            <div>
+                {% if destructive %}
+                    {{ component('dev_kit:action_button', {action: 'apply', label: 'opencolibri_dev_kit.ui.apply_and_delete'|trans, variant: 'destructive', icon: 'lucide:triangle-alert', confirm: 'opencolibri_dev_kit.ui.apply_and_delete_confirm'|trans, confirm_title: 'opencolibri_dev_kit.ui.apply_and_delete'|trans}) }}
+                {% else %}
+                    {{ component('dev_kit:action_button', {action: 'apply', label: 'opencolibri_dev_kit.ui.apply'|trans, icon: 'lucide:play'}) }}
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+{%- endif -%}

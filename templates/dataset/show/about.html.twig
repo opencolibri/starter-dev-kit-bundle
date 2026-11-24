@@ -1,0 +1,19 @@
+{% set dataset = hookable_metadata.context.dataset %}
+{% set catalog = hookable_metadata.context.catalog|default(null) %}
+{% set preview = dataset.slug != 'sylius' ? dev_kit_dataset_preview(dataset.slug) : null %}
+<twig:shadcn:Card>
+    <twig:shadcn:Card:Header>
+        <twig:shadcn:Card:Title>{{ 'opencolibri_dev_kit.ui.about_dataset'|trans }}</twig:shadcn:Card:Title>
+    </twig:shadcn:Card:Header>
+    <twig:shadcn:Card:Content class="flex flex-col gap-3 text-sm">
+        {% if preview %}<img src="{{ preview }}" alt="" width="240" height="320" class="aspect-[4/3] w-full rounded-md bg-muted object-cover">{% endif %}
+        {% if dataset.description is defined and dataset.description %}<p class="text-muted-foreground">{{ dataset.description }}</p>{% endif %}
+        {% if catalog %}<dl class="grid grid-cols-2 gap-2">
+            <dt class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.products'|trans }}</dt><dd class="text-end tabular-nums">{{ catalog.products|length }}</dd>
+            <dt class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.collections'|trans }}</dt><dd class="text-end tabular-nums">{{ catalog.collections|length }}</dd>
+            {% if dataset.theme is defined and dataset.theme %}
+                <dt class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.made_for_theme'|trans }}</dt><dd class="text-end">{{ dataset.theme|replace({'_': ' '})|title }}</dd>
+            {% endif %}
+        </dl>{% endif %}
+    </twig:shadcn:Card:Content>
+</twig:shadcn:Card>

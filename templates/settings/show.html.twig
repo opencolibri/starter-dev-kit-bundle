@@ -1,0 +1,7 @@
+{% extends '@OpenColibriStarterDevKit/shared/layout.html.twig' %}
+
+{% set hook = 'opencolibri_dev_kit.' ~ page_name ~ '.index' %}
+{% set context = {
+    page: page|merge({breadcrumbs: [{name: page.title}]}),
+    run_monitor: {route: 'opencolibri_dev_kit_settings', params: {page: page_name}},
+} %}

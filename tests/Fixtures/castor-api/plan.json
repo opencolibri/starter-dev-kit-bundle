@@ -1,0 +1,1 @@
+{"steps":[{"key":"header","title":"Change the header layout","cost":"instant","costLabel":"about 10 s (cache clear)","command":"castor sylius:theme:header --search=icon","details":["Search: icon"],"destructive":false}]}

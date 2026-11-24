@@ -1,0 +1,9 @@
+{# Read before the nested components: inside <twig:shadcn:Card>, "this" is the card. #}
+{% set this_plan = this.plan %}
+<div {{ attributes.defaults({class: 'flex flex-col gap-3'}) }}>
+    {% if planned %}
+        {{ component('dev_kit:plan', {plan: this_plan, error: error}) }}
+    {% else %}
+        <div>{{ component('dev_kit:action_button', {action: 'showPlan', label: 'opencolibri_dev_kit.ui.back_to_this_state'|trans, variant: 'outline', size: 'sm', icon: 'lucide:history'}) }}</div>
+    {% endif %}
+</div>

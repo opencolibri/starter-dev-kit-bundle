@@ -1,0 +1,12 @@
+{% extends '@OpenColibriStarterDevKit/shared/layout.html.twig' %}
+
+{% set hook = 'opencolibri_dev_kit.history.index' %}
+{% set context = {
+    page: {
+        title: 'opencolibri_dev_kit.ui.history',
+        subheader: 'opencolibri_dev_kit.ui.history_subheader',
+        icon: 'lucide:history',
+        breadcrumbs: [{name: 'opencolibri_dev_kit.ui.history'}],
+    },
+    run_monitor: {route: 'opencolibri_dev_kit_history', params: {}},
+} %}

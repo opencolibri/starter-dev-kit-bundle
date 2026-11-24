@@ -1,0 +1,56 @@
+{# Read before the nested components: inside <twig:shadcn:Card>, "this" is the card. #}
+{% set this_currencyChoices = this.currencyChoices %}
+{% set this_localeChoices = this.localeChoices %}
+{% set this_plan = this.plan %}
+<div {{ attributes }}>
+    <twig:shadcn:Card>
+        <twig:shadcn:Card:Header>
+            <twig:shadcn:Card:Title>{{ 'opencolibri_dev_kit.ui.locales_and_currencies'|trans }}</twig:shadcn:Card:Title>
+            <twig:shadcn:Card:Description>{{ 'opencolibri_dev_kit.ui.locales_description'|trans }}</twig:shadcn:Card:Description>
+        </twig:shadcn:Card:Header>
+        <twig:shadcn:Card:Content class="flex flex-col gap-6">
+            <div class="grid gap-6 lg:grid-cols-2">
+                <fieldset class="flex flex-col gap-3 rounded-lg border p-4">
+                    <legend class="px-1 text-sm font-medium">{{ 'opencolibri_dev_kit.ui.locales'|trans }}</legend>
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        {% for code, label in this_localeChoices %}
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="locales[]" value="{{ code }}" data-model="locales[]"{{ code in locales ? ' checked' }} class="size-4 shrink-0 rounded-[4px] border border-input accent-primary">
+                                <span>{{ label }} <code class="font-mono text-xs text-muted-foreground">{{ code }}</code></span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <div class="flex flex-col gap-1.5 sm:max-w-xs">
+                        <twig:shadcn:Label for="default-locale">{{ 'opencolibri_dev_kit.ui.default_locale'|trans }}</twig:shadcn:Label>
+                        <twig:shadcn:NativeSelect id="default-locale" data-model="defaultLocale">
+                            {% for code in locales %}
+                                <option value="{{ code }}"{% if code == defaultLocale %} selected{% endif %}>{{ this_localeChoices[code]|default(code) }}</option>
+                            {% endfor %}
+                        </twig:shadcn:NativeSelect>
+                    </div>
+                </fieldset>
+                <fieldset class="flex flex-col gap-3 rounded-lg border p-4">
+                    <legend class="px-1 text-sm font-medium">{{ 'opencolibri_dev_kit.ui.currencies'|trans }}</legend>
+                    <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        {% for code, label in this_currencyChoices %}
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="currencies[]" value="{{ code }}" data-model="currencies[]"{{ code in currencies ? ' checked' }} class="size-4 shrink-0 rounded-[4px] border border-input accent-primary">
+                                <span>{{ label }} <code class="font-mono text-xs text-muted-foreground">{{ code }}</code></span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <div class="flex flex-col gap-1.5 sm:max-w-xs">
+                        <twig:shadcn:Label for="base-currency">{{ 'opencolibri_dev_kit.ui.base_currency'|trans }}</twig:shadcn:Label>
+                        <twig:shadcn:NativeSelect id="base-currency" data-model="baseCurrency">
+                            {% for code in currencies %}
+                                <option value="{{ code }}"{% if code == baseCurrency %} selected{% endif %}>{{ code }} · {{ this_currencyChoices[code]|default(code) }}</option>
+                            {% endfor %}
+                        </twig:shadcn:NativeSelect>
+                    </div>
+                    <p class="text-xs text-muted-foreground">{{ 'opencolibri_dev_kit.ui.currencies_help'|trans }}</p>
+                </fieldset>
+            </div>
+            {{ component('dev_kit:plan', {plan: this_plan, error: error}) }}
+        </twig:shadcn:Card:Content>
+    </twig:shadcn:Card>
+</div>

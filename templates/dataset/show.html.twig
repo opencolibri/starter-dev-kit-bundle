@@ -1,0 +1,23 @@
+{% extends '@OpenColibriStarterDevKit/shared/layout.html.twig' %}
+
+{% set sylius = slug == 'sylius' %}
+{% set dataset = sylius
+    ? {slug: 'sylius', name: 'opencolibri_dev_kit.ui.sylius_fixtures'|trans, description: 'opencolibri_dev_kit.ui.sylius_fixtures_long'|trans}
+    : dev_kit_catalog().datasets|filter(d => d.slug == slug)|first|default({slug: slug, name: slug}) %}
+{% set hook = 'opencolibri_dev_kit.dataset.show' %}
+{% set context = {
+    slug: slug,
+    dataset: dataset,
+    catalog: catalog,
+    collection: collection,
+    page: {
+        title: dataset.name,
+        subheader: catalog ? 'opencolibri_dev_kit.ui.product_count'|trans({'%count%': catalog.products|length}) : 'opencolibri_dev_kit.ui.demo_data'|trans,
+        icon: 'lucide:package',
+        breadcrumbs: [
+            {name: 'opencolibri_dev_kit.ui.catalog', url: path('opencolibri_dev_kit_settings', {page: 'catalog'})},
+            {name: dataset.name},
+        ],
+    },
+    run_monitor: {route: 'opencolibri_dev_kit_dataset_show', params: {slug: slug}},
+} %}
