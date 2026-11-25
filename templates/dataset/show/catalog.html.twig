@@ -1,13 +1,25 @@
 {% if hookable_metadata.context.catalog|default(null) %}
 {% set catalog = hookable_metadata.context.catalog|default(null) %}
 {% set current = hookable_metadata.context.collection|default(null) %}
+{% set slug = hookable_metadata.context.slug %}
+{# A dataset built in the project is edited here: a ready-made one is read only. #}
+{% set editable = not (hookable_metadata.context.dataset.builtIn ?? true) %}
+{% from '@SyliusShadcnAdminUi/shared/helper/ui.html.twig' import button_class %}
+{% set add_class = button_class('default', 'sm') %}
 
 <twig:shadcn:Card>
     <twig:shadcn:Card:Header>
         <twig:shadcn:Card:Title>{{ 'opencolibri_dev_kit.ui.products'|trans }}</twig:shadcn:Card:Title>
         <twig:shadcn:Card:Description>
-            {{- 'opencolibri_dev_kit.ui.dataset_products_description'|trans -}}
+            {{- (editable ? 'opencolibri_dev_kit.ui.dataset_products_editable_description' : 'opencolibri_dev_kit.ui.dataset_products_description')|trans -}}
         </twig:shadcn:Card:Description>
+        {% if editable %}
+            <twig:shadcn:Card:Action>
+                <a class="{{ add_class }}" href="{{ path('opencolibri_dev_kit_dataset_product_new', {slug: slug}|merge(current ? {collection: (catalog.collections|filter(c => c.name == current)|first).key|default(current)} : {})) }}">
+                    {{ ux_icon('lucide:plus', {'data-icon': 'inline-start', 'aria-hidden': 'true'}) }}{{ 'opencolibri_dev_kit.ui.add_product'|trans }}
+                </a>
+            </twig:shadcn:Card:Action>
+        {% endif %}
     </twig:shadcn:Card:Header>
     {% if catalog %}
         {% set products = catalog.productsOf(current) %}
@@ -26,9 +38,16 @@
                 </nav>
             {% endif %}
 
+            {% if products is empty %}
+                <div class="flex flex-col items-center gap-2 rounded-md border border-dashed px-6 py-10 text-center text-sm text-muted-foreground">
+                    {{ ux_icon('lucide:package-open', {class: 'size-6', 'aria-hidden': 'true'}) }}
+                    <p>{{ 'opencolibri_dev_kit.ui.dataset_no_products'|trans }}</p>
+                </div>
+            {% endif %}
+
             <ul class="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-4">
                 {% for product in products %}
-                    <li class="flex min-w-0 flex-col gap-2">
+                    <li class="group relative flex min-w-0 flex-col gap-2">
                         <span class="flex aspect-[3/4] items-center justify-center overflow-hidden rounded-md border bg-muted/50 text-muted-foreground">
                             {% if product.image %}
                                 <img src="{{ path('opencolibri_dev_kit_dataset_media', {slug: hookable_metadata.context.slug, file: product.image}) }}" alt="" loading="lazy" class="size-full object-contain">
@@ -39,9 +58,14 @@
                             {% endif %}
                         </span>
                         <div class="flex flex-col gap-0.5">
-                            <span class="line-clamp-2 text-sm font-medium" title="{{ product.description }}">{{ product.title }}</span>
+                            {% if editable %}
+                                {# The whole card opens the product form. #}
+                                <a href="{{ path('opencolibri_dev_kit_dataset_product_edit', {slug: slug, index: product.index}) }}" class="line-clamp-2 text-sm font-medium after:absolute after:inset-0 after:rounded-md group-hover:underline focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring" title="{{ product.description }}">{{ product.title }}</a>
+                            {% else %}
+                                <span class="line-clamp-2 text-sm font-medium" title="{{ product.description }}">{{ product.title }}</span>
+                            {% endif %}
                             <span class="flex items-center justify-between gap-2 text-xs text-muted-foreground">
-                                <span class="truncate">{{ product.collection }}</span>
+                                <span class="truncate">{{ product.collection ?? (editable ? 'opencolibri_dev_kit.ui.no_collection'|trans : '') }}</span>
                                 {% if product.price is not null %}<span class="shrink-0 tabular-nums text-foreground">{{ product.price|number_format(2, '.', ' ') }} €</span>{% endif %}
                             </span>
                         </div>

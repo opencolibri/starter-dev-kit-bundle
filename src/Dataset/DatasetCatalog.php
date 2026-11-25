@@ -11,8 +11,8 @@ namespace OpenColibri\Starter\DevKitBundle\Dataset;
 final readonly class DatasetCatalog
 {
     /**
-     * @param list<array{name: string, description: string|null, image: string|null, productCount: int}> $collections
-     * @param list<array{title: string, description: string|null, collection: string|null, price: float|null, image: string|null}> $products
+     * @param list<array{index: int, name: string, key: string, parent: string|null, description: string|null, image: string|null, productCount: int}>                $collections
+     * @param list<array{index: int, title: string, description: string|null, collection: string|null, collectionKey: string|null, price: float|null, image: string|null}> $products
      */
     public function __construct(
         public array $collections,
@@ -20,7 +20,7 @@ final readonly class DatasetCatalog
     ) {}
 
     /**
-     * @return list<array{title: string, description: string|null, collection: string|null, price: float|null, image: string|null}>
+     * @return list<array{index: int, title: string, description: string|null, collection: string|null, collectionKey: string|null, price: float|null, image: string|null}>
      */
     public function productsOf(?string $collection): array
     {
@@ -29,5 +29,57 @@ final readonly class DatasetCatalog
         }
 
         return array_values(array_filter($this->products, static fn(array $product): bool => $product['collection'] === $collection));
+    }
+
+    /**
+     * @return array{index: int, title: string, description: string|null, collection: string|null, collectionKey: string|null, price: float|null, image: string|null}|null
+     */
+    public function product(int $index): ?array
+    {
+        foreach ($this->products as $product) {
+            if ($product['index'] === $index) {
+                return $product;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @return array{index: int, name: string, key: string, parent: string|null, description: string|null, image: string|null, productCount: int}|null
+     */
+    public function collection(int $index): ?array
+    {
+        foreach ($this->collections as $collection) {
+            if ($collection['index'] === $index) {
+                return $collection;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * The collections a product can go in, as form choices: label => name or code. A sub-collection is labelled
+     * after its parent ("Men › T-shirts").
+     *
+     * @return array<string, string>
+     */
+    public function collectionChoices(): array
+    {
+        $labels = [];
+
+        foreach ($this->collections as $collection) {
+            $labels[$collection['key']] = $collection['name'];
+        }
+
+        $choices = [];
+
+        foreach ($this->collections as $collection) {
+            $label = null !== $collection['parent'] ? ($labels[$collection['parent']] ?? $collection['parent']) . ' › ' . $collection['name'] : $collection['name'];
+            $choices[$label] = $collection['key'];
+        }
+
+        return $choices;
     }
 }

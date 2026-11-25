@@ -1,0 +1,35 @@
+{% from '@SyliusShadcnAdminUi/shared/helper/ui.html.twig' import button_class %}
+
+{% set context = hookable_metadata.context %}
+{% set form = context.form %}
+{% set dataset = context.dataset|default(null) %}
+{% set image = context.image|default(null) %}
+{# Read before the card: macros are not reachable inside <twig:shadcn:Card>. #}
+{% set submit_class = button_class('default') %}
+{% set secondary_class = button_class('outline') %}
+{% set cancel_class = button_class('ghost') %}
+{% form_theme form '@SyliusShadcnAdminUi/shared/form_theme.html.twig' %}
+
+<twig:shadcn:Card class="max-w-3xl">
+    <twig:shadcn:Card:Content>
+        {{ form_start(form, {attr: {class: 'flex flex-col gap-6'}}) }}
+            {{ form_errors(form) }}
+            {% if image and dataset %}
+                <div class="flex items-center gap-4">
+                    <span class="flex size-24 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted/50">
+                        <img src="{{ path('opencolibri_dev_kit_dataset_media', {slug: dataset.slug, file: image}) }}" alt="" class="size-full object-contain">
+                    </span>
+                    <p class="text-sm text-muted-foreground">{{ 'opencolibri_dev_kit.ui.current_image'|trans }}</p>
+                </div>
+            {% endif %}
+            {{ form_widget(form) }}
+            <div class="flex flex-wrap items-center gap-2 border-t pt-6">
+                <button type="submit" class="{{ submit_class }}">{{ ux_icon(context.submit_icon, {'data-icon': 'inline-start', 'aria-hidden': 'true'}) }}{{ context.submit|trans }}</button>
+                {% if context.add_another|default(false) %}
+                    <button type="submit" name="add_another" value="1" class="{{ secondary_class }}">{{ 'opencolibri_dev_kit.ui.add_and_continue'|trans }}</button>
+                {% endif %}
+                <a href="{{ dataset ? path('opencolibri_dev_kit_dataset_show', {slug: dataset.slug}) : path('opencolibri_dev_kit_settings', {page: 'catalog'}) }}" class="{{ cancel_class }}">{{ 'sylius.ui.cancel'|trans }}</a>
+            </div>
+        {{ form_end(form) }}
+    </twig:shadcn:Card:Content>
+</twig:shadcn:Card>

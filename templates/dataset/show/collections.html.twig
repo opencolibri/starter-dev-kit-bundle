@@ -1,0 +1,49 @@
+{% from '@SyliusShadcnAdminUi/shared/helper/ui.html.twig' import button_class %}
+{% set dataset = hookable_metadata.context.dataset %}
+{% set catalog = hookable_metadata.context.catalog|default(null) %}
+{% set add_class = button_class('outline', 'sm') %}
+{% set edit_class = button_class('ghost', 'icon-sm') %}
+
+{# The collections of a dataset written here: added, renamed, moved under another one, removed. #}
+{% if not (dataset.builtIn ?? true) and catalog %}
+    <twig:shadcn:Card>
+        <twig:shadcn:Card:Header>
+            <twig:shadcn:Card:Title>{{ 'opencolibri_dev_kit.ui.collections'|trans }}</twig:shadcn:Card:Title>
+            <twig:shadcn:Card:Description>{{ (catalog.collections ? 'opencolibri_dev_kit.ui.collections_description' : 'opencolibri_dev_kit.ui.no_collections')|trans }}</twig:shadcn:Card:Description>
+            <twig:shadcn:Card:Action>
+                <a class="{{ add_class }}" href="{{ path('opencolibri_dev_kit_dataset_collection_new', {slug: dataset.slug}) }}">
+                    {{ ux_icon('lucide:plus', {'data-icon': 'inline-start', 'aria-hidden': 'true'}) }}{{ 'opencolibri_dev_kit.ui.add'|trans }}
+                </a>
+            </twig:shadcn:Card:Action>
+        </twig:shadcn:Card:Header>
+        {% if catalog.collections %}
+            {% set names = {} %}
+            {% for collection in catalog.collections %}{% set names = names|merge({(collection.key): collection.name}) %}{% endfor %}
+            <twig:shadcn:Card:Content>
+                <ul class="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                    {% for collection in catalog.collections %}
+                        <li class="flex min-w-0 items-center gap-3 rounded-md border p-2">
+                            <span class="flex size-9 shrink-0 items-center justify-center overflow-hidden rounded border bg-muted/50 text-muted-foreground">
+                                {% if collection.image %}
+                                    <img src="{{ path('opencolibri_dev_kit_dataset_media', {slug: dataset.slug, file: collection.image}) }}" alt="" loading="lazy" class="size-full object-cover">
+                                {% else %}
+                                    {{ ux_icon('lucide:folder', {class: 'size-4', 'aria-hidden': 'true'}) }}
+                                {% endif %}
+                            </span>
+                            <span class="flex min-w-0 flex-1 flex-col">
+                                <a href="{{ path('opencolibri_dev_kit_dataset_collection_edit', {slug: dataset.slug, index: collection.index}) }}" class="truncate text-sm font-medium hover:underline">{{ collection.name }}</a>
+                                <span class="truncate text-xs text-muted-foreground">
+                                    {{- 'opencolibri_dev_kit.ui.product_count'|trans({'%count%': collection.productCount}) -}}
+                                    {%- if collection.parent %} · {{ names[collection.parent] ?? collection.parent }}{% endif -%}
+                                </span>
+                            </span>
+                            <a class="{{ edit_class }}" href="{{ path('opencolibri_dev_kit_dataset_collection_edit', {slug: dataset.slug, index: collection.index}) }}" title="{{ 'sylius.ui.edit'|trans }}">
+                                {{ ux_icon('lucide:pencil', {'aria-hidden': 'true'}) }}<span class="sr-only">{{ 'sylius.ui.edit'|trans }} {{ collection.name }}</span>
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </twig:shadcn:Card:Content>
+        {% endif %}
+    </twig:shadcn:Card>
+{% endif %}

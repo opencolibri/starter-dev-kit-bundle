@@ -1,0 +1,9 @@
+{% set delete = hookable_metadata.context.delete|default(null) %}
+
+{% if delete %}
+    <div class="flex flex-wrap items-center gap-2">
+        {% if delete.help %}<span class="text-xs text-muted-foreground">{{ delete.help|trans }}</span>{% endif %}
+        {# Delete dialog of Sylius Shadcn Admin UI, outside the form: posts "_csrf_token" (token id = "id") to "path". #}
+        {{ component('sylius_shadcn_admin_ui:delete_modal', {id: delete.id, path: delete.path, label: delete.label, icon_only: false}) }}
+    </div>
+{% endif %}

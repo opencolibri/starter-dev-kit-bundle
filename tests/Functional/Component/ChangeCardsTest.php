@@ -101,6 +101,39 @@ final class ChangeCardsTest extends ComponentTestCase
         static::assertSame([], FakeCastorApi::calls('dev-kit:apply'));
     }
 
+    public function testTheDatasetSearchFiltersAsYouType(): void
+    {
+        $component = $this->createAdminLiveComponent('DevKit:DatasetBrowser', ['current' => 'roastery']);
+        $titles = static fn(): array => $component->render()->crawler()->filter('ul.grid a .truncate')->each(static fn($title): string => trim($title->text()));
+
+        static::assertSame(['Sylius demo data', 'Roastery', 'Teahouse', 'My catalog'], $titles());
+
+        // Every word, in the name, slug, description or theme.
+        $component->set('query', 'written hand');
+        static::assertSame(['My catalog'], $titles());
+        $component->set('query', 'tea');
+        static::assertSame(['Teahouse'], $titles());
+
+        $component->set('query', 'bicycles');
+        static::assertStringContainsString('No dataset matches &quot;bicycles&quot;.', $component->render()->toString());
+    }
+
+    public function testALoadedDatasetBuiltInTheProjectCanBeLoadedAgain(): void
+    {
+        $state = ['dataset' => 'my-catalog'] + $this->state;
+        $component = $this->createAdminLiveComponent('DevKit:DatasetLoader', ['state' => $state, 'dataset' => 'my-catalog', 'editable' => true]);
+
+        static::assertStringContainsString('Load it again', $component->render()->toString());
+        $component->call('reload');
+
+        static::assertSame(['dataset' => 'my-catalog'], FakeCastorApi::calls('sylius:dataset:load')[0]['payload']);
+        static::assertSame('start', FakeCastorApi::calls('sylius:dataset:load')[0]['action']);
+
+        // A ready-made dataset only loads through dev-kit:apply.
+        $readyMade = $this->createAdminLiveComponent('DevKit:DatasetLoader', ['state' => $this->state, 'dataset' => 'roastery']);
+        static::assertStringNotContainsString('Load it again', $readyMade->render()->toString());
+    }
+
     public function testTheHistoryPlansTheWayBackOnceAsked(): void
     {
         $history = json_decode((string) file_get_contents(Kernel::FIXTURES_DIR . '/castor-api/history.json'), true, flags: \JSON_THROW_ON_ERROR);

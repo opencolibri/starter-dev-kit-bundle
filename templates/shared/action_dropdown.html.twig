@@ -1,0 +1,14 @@
+{#
+ # A dropdown button of a page header ("<page>.content.header.title_block.actions" hook), like the product "Create"
+ # button of Sylius, from its configuration:
+ #   id (stable ids of the menu), text, icon: the button; items: [{title: translation key, route, route_params, icon}] (or {type: 'divider'}).
+ #}
+{% from '@SyliusShadcnAdminUi/shared/helper/dropdown.html.twig' import list %}
+{% set action = hookable_metadata.configuration %}
+
+{{ list({
+    id: 'dropdown-' ~ action.id|default('actions'),
+    direction: 'down-end',
+    class: 'min-w-56',
+    button: {text: action.text|trans, icon: action.icon|default(null), variant: 'default'},
+}, action.items|map(item => item.type|default(null) ? item : item|merge({url: path(item.route, item.route_params|default({}))}))) }}

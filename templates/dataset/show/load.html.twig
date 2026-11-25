@@ -2,7 +2,7 @@
 {% set dataset = hookable_metadata.context.dataset %}
 {% set state = dev_kit_state() %}
 {% if state is not null %}
-    {{ component('DevKit:DatasetLoader', {state: state, dataset: dataset.slug}) }}
+    {{ component('DevKit:DatasetLoader', {state: state, dataset: dataset.slug, editable: not (dataset.builtIn ?? true)}) }}
 {% else %}
     {% include '@OpenColibriStarterDevKit/shared/unavailable.html.twig' %}
 {% endif %}

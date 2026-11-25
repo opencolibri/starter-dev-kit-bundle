@@ -1,0 +1,9 @@
+{% from '@SyliusShadcnAdminUi/shared/helper/ui.html.twig' import button_class %}
+{% set dataset = hookable_metadata.context.dataset %}
+
+{# A dataset built in the project: its name, description and theme, and its deletion. #}
+{% if not (dataset.builtIn ?? true) %}
+    <a class="{{ button_class('outline') }}" href="{{ path('opencolibri_dev_kit_dataset_edit', {slug: dataset.slug}) }}">
+        {{ ux_icon('lucide:pencil', {'data-icon': 'inline-start', 'aria-hidden': 'true'}) }}{{ 'opencolibri_dev_kit.ui.edit_dataset'|trans }}
+    </a>
+{% endif %}

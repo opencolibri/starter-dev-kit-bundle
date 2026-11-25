@@ -78,6 +78,25 @@ return static function (ContainerConfigurator $container): void {
             'unavailable' => ['template' => $views . '/shared/unavailable.html.twig', 'priority' => 100],
             'settings' => ['template' => $views . '/settings/storefront.html.twig', 'priority' => 0],
         ],
+        // The ways to make a dataset of one's own: a "New dataset" dropdown in the header actions of the catalog page,
+        // like the product "Create" button of Sylius. An instance changes its items in this configuration.
+        'opencolibri_dev_kit.catalog.index.content.header.title_block' => [
+            'actions' => ['template' => $shadcn . '/content/header/title_block/actions.html.twig'],
+        ],
+        'opencolibri_dev_kit.catalog.index.content.header.title_block.actions' => [
+            'create' => ['template' => $views . '/shared/action_dropdown.html.twig', 'configuration' => [
+                'id' => 'new-dataset',
+                'text' => 'opencolibri_dev_kit.ui.new_dataset',
+                'icon' => 'lucide:plus',
+                'items' => [
+                    ['title' => 'opencolibri_dev_kit.ui.create_ai_catalog', 'route' => 'opencolibri_dev_kit_dataset_build', 'route_params' => ['source' => 'ai'], 'icon' => 'lucide:sparkles'],
+                    ['title' => 'opencolibri_dev_kit.ui.import_existing_site', 'route' => 'opencolibri_dev_kit_dataset_build', 'route_params' => ['source' => 'existing'], 'icon' => 'lucide:globe'],
+                    ['type' => 'divider'],
+                    ['title' => 'opencolibri_dev_kit.ui.create_manual_catalog', 'route' => 'opencolibri_dev_kit_dataset_create', 'icon' => 'lucide:pencil-ruler'],
+                    ['title' => 'opencolibri_dev_kit.ui.import_zip', 'route' => 'opencolibri_dev_kit_dataset_import', 'icon' => 'lucide:file-archive'],
+                ],
+            ]],
+        ],
         'opencolibri_dev_kit.catalog.index.content.body' => [
             'unavailable' => ['template' => $views . '/shared/unavailable.html.twig', 'priority' => 100],
             'settings' => ['template' => $views . '/settings/catalog.html.twig', 'priority' => 0],
@@ -96,18 +115,31 @@ return static function (ContainerConfigurator $container): void {
         ],
 
         // A dataset, before it is loaded: its products, what it is and how to load it.
+        'opencolibri_dev_kit.dataset.show.content.header.title_block' => [
+            'actions' => ['template' => $views . '/dataset/show/actions.html.twig'],
+        ],
         'opencolibri_dev_kit.dataset.show.content.body' => [
             'load' => ['template' => $views . '/dataset/show/load.html.twig', 'priority' => 100],
             'columns' => ['template' => $views . '/dataset/show/columns.html.twig', 'priority' => 0],
         ],
         'opencolibri_dev_kit.dataset.show.content.body.main' => [
             'catalog' => ['template' => $views . '/dataset/show/catalog.html.twig'],
+            // Datasets built in the project only: the menu of the shop, under its products.
+            'collections' => ['template' => $views . '/dataset/show/collections.html.twig', 'priority' => -100],
         ],
         'opencolibri_dev_kit.dataset.show.content.body.aside' => [
             'about' => ['template' => $views . '/dataset/show/about.html.twig'],
         ],
 
         // History
+        // A dataset written by hand: create, import a zip, settings, collection and product forms.
+        'opencolibri_dev_kit.dataset.form.content.header.title_block' => [
+            'actions' => ['template' => $views . '/dataset/form/actions.html.twig'],
+        ],
+        'opencolibri_dev_kit.dataset.form.content.body' => [
+            'form' => ['template' => $views . '/dataset/form/form.html.twig'],
+        ],
+
         'opencolibri_dev_kit.history.index.content.body' => [
             'list' => ['template' => $views . '/history/list.html.twig'],
         ],

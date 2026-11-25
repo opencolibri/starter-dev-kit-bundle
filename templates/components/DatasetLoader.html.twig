@@ -13,8 +13,14 @@
                 </div>
                 {% if not loaded and not planned %}
                     {{ component('dev_kit:action_button', {action: 'showPlan', label: 'opencolibri_dev_kit.ui.load_this_catalog'|trans, icon: 'lucide:download'}) }}
+                {% elseif loaded and editable %}
+                    {{ component('dev_kit:action_button', {action: 'reload', label: 'opencolibri_dev_kit.ui.reload_catalog'|trans, icon: 'lucide:refresh-cw', variant: 'outline'}) }}
                 {% endif %}
             </div>
+            {% if loaded and editable %}
+                <p class="text-xs text-muted-foreground">{{ 'opencolibri_dev_kit.ui.reload_catalog_help'|trans }}</p>
+                {{ component('dev_kit:message', {message: error}) }}
+            {% endif %}
             {% if planned and not loaded %}
                 {{ component('dev_kit:plan', {plan: this_plan, error: error}) }}
             {% endif %}

@@ -40,7 +40,7 @@ final class CastorApiClientTest extends TestCase
         $catalog = FakeCastorApi::client()->catalog();
 
         static::assertSame(['roastery', 'drive'], array_column($catalog['themes'], 'name'));
-        static::assertSame(['roastery', 'teahouse'], array_column($catalog['datasets'], 'slug'));
+        static::assertSame(['roastery', 'teahouse', 'my-catalog'], array_column($catalog['datasets'], 'slug'));
         static::assertSame(['altcha', 'recaptcha', 'refund', 'wishlist'], array_column($catalog['plugins'], 'name'));
     }
 

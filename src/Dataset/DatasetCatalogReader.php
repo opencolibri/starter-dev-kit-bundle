@@ -43,20 +43,33 @@ final readonly class DatasetCatalogReader
             return null;
         }
 
+        $collectionList = \is_array($collections['collections'] ?? null) ? $collections['collections'] : [];
+        // Products of a grouped menu point at the code of their collection: shown by its name.
+        $names = [];
+
+        foreach ($collectionList as $collection) {
+            if (\is_array($collection) && \is_string($collection['name'] ?? null) && \is_string($collection['code'] ?? null)) {
+                $names[$collection['code']] = $collection['name'];
+            }
+        }
+
         $items = [];
         $counts = [];
 
-        foreach (\is_array($products['products'] ?? null) ? $products['products'] : [] as $product) {
+        foreach (\is_array($products['products'] ?? null) ? array_values($products['products']) : [] as $index => $product) {
             if (!\is_array($product) || !\is_string($product['title'] ?? null)) {
                 continue;
             }
 
-            $collection = \is_string($product['collection_name'] ?? null) ? $product['collection_name'] : null;
-            $counts[$collection] = ($counts[$collection] ?? 0) + 1;
+            $code = \is_string($product['collection'] ?? null) && '' !== $product['collection'] ? $product['collection'] : null;
+            $collection = null !== $code ? ($names[$code] ?? $code) : (\is_string($product['collection_name'] ?? null) ? $product['collection_name'] : null);
+            $counts[$code ?? $collection] = ($counts[$code ?? $collection] ?? 0) + 1;
             $items[] = [
+                'index' => $index,
                 'title' => $product['title'],
                 'description' => \is_string($product['description'] ?? null) ? $product['description'] : null,
                 'collection' => $collection,
+                'collectionKey' => $code ?? $collection,
                 'price' => is_numeric($product['price_eur'] ?? null) ? (float) $product['price_eur'] : null,
                 'image' => $this->media($directory, $product['image'] ?? null),
             ];
@@ -64,13 +77,17 @@ final readonly class DatasetCatalogReader
 
         $groups = [];
 
-        foreach (\is_array($collections['collections'] ?? null) ? $collections['collections'] : [] as $collection) {
+        foreach (array_values($collectionList) as $index => $collection) {
             if (\is_array($collection) && \is_string($collection['name'] ?? null)) {
+                $code = \is_string($collection['code'] ?? null) && '' !== $collection['code'] ? $collection['code'] : null;
                 $groups[] = [
+                    'index' => $index,
                     'name' => $collection['name'],
+                    'key' => $code ?? $collection['name'],
+                    'parent' => \is_scalar($collection['parent'] ?? null) && '' !== (string) $collection['parent'] ? (string) $collection['parent'] : null,
                     'description' => \is_string($collection['description'] ?? null) ? $collection['description'] : null,
                     'image' => $this->media($directory, $collection['image'] ?? null),
-                    'productCount' => $counts[$collection['name']] ?? 0,
+                    'productCount' => ($counts[$code ?? $collection['name']] ?? 0),
                 ];
             }
         }

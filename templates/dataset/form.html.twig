@@ -1,0 +1,23 @@
+{% extends '@OpenColibriStarterDevKit/shared/layout.html.twig' %}
+
+{# The forms of a dataset written by hand: create, import, settings, a collection or a product. #}
+{% set hook = 'opencolibri_dev_kit.dataset.form' %}
+{% set breadcrumbs = [{name: 'opencolibri_dev_kit.ui.catalog', url: path('opencolibri_dev_kit_settings', {page: 'catalog'})}] %}
+{% if dataset is defined %}
+    {% set breadcrumbs = breadcrumbs|merge([{name: dataset.name, url: path('opencolibri_dev_kit_dataset_show', {slug: dataset.slug})}]) %}
+{% endif %}
+{% set context = {
+    form: form,
+    dataset: dataset|default(null),
+    submit: submit,
+    submit_icon: submit_icon|default('lucide:check'),
+    add_another: add_another|default(false),
+    image: image|default(null),
+    delete: delete|default(null),
+    page: {
+        title: title,
+        subheader: subheader|default(dataset is defined ? dataset.name : null),
+        icon: icon,
+        breadcrumbs: breadcrumbs|merge([{name: title}]),
+    },
+} %}

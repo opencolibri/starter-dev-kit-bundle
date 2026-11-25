@@ -52,7 +52,7 @@ final class DatasetTest extends WebTestCase
         $crawler = static::createAdminClient()->request('GET', '/settings/catalog');
 
         $links = $crawler->filter('main ul.grid a')->each(static fn($link): string => (string) $link->attr('href'));
-        static::assertSame(['/catalog/sylius', '/catalog/roastery', '/catalog/teahouse'], $links);
+        static::assertSame(['/catalog/sylius', '/catalog/roastery', '/catalog/teahouse', '/catalog/my-catalog'], $links);
         self::assertSelectorNotExists('main input[type="radio"]');
     }
 

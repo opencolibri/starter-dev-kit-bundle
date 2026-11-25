@@ -18,6 +18,9 @@ use Twig\Attribute\AsTwigFunction;
  */
 final class DevKitExtension
 {
+    /** What the manifest can pick, cached: see catalogCacheKey(). */
+    public const string CATALOG_CACHE_KEY = 'opencolibri_dev_kit.catalog';
+
     /** @var array<string, mixed> */
     private array $loaded = [];
 
@@ -27,6 +30,8 @@ final class DevKitExtension
         private readonly UrlGeneratorInterface $urlGenerator,
         #[Autowire('%opencolibri_dev_kit.storefront_url%')]
         private readonly string $storefrontUrl,
+        #[Autowire('%opencolibri_dev_kit.import_var_dir%')]
+        private readonly string $importVarDir,
     ) {}
 
     /**
@@ -48,7 +53,7 @@ final class DevKitExtension
     {
         $empty = ['themes' => [], 'datasets' => [], 'plugins' => []];
 
-        return $this->load('catalog', fn(): array => $this->cache->get('opencolibri_dev_kit.catalog', function (ItemInterface $item): array {
+        return $this->load('catalog', fn(): array => $this->cache->get($this->catalogCacheKey(), function (ItemInterface $item): array {
             $item->expiresAfter(300);
 
             return $this->castorApi->catalog();
@@ -62,6 +67,25 @@ final class DevKitExtension
     public function history(): array
     {
         return $this->load('history', fn(): array => $this->castorApi->history()) ?? [];
+    }
+
+    /**
+     * The datasets built in the project change from the admin or from a run (an AI build, an import): the cache key
+     * follows the files of their directory, so the list is read again as soon as one of them is added, changed or
+     * removed.
+     */
+    private function catalogCacheKey(): string
+    {
+        $directory = \dirname(rtrim($this->importVarDir, '/\\')) . '/datasets';
+        $files = [$directory];
+
+        foreach (['dataset', 'products', 'collections'] as $file) {
+            array_push($files, ...(glob($directory . '/*/' . $file . '.yaml') ?: []));
+        }
+
+        $times = array_map(static fn(string $file): string => $file . '@' . (@filemtime($file) ?: 0), $files);
+
+        return self::CATALOG_CACHE_KEY . '.' . hash('xxh128', implode('|', $times));
     }
 
     /**

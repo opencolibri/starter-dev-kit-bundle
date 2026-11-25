@@ -11,6 +11,10 @@
         {% if catalog %}<dl class="grid grid-cols-2 gap-2">
             <dt class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.products'|trans }}</dt><dd class="text-end tabular-nums">{{ catalog.products|length }}</dd>
             <dt class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.collections'|trans }}</dt><dd class="text-end tabular-nums">{{ catalog.collections|length }}</dd>
+            {% if dataset.source is defined and dataset.source %}
+                <dt class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.source'|trans }}</dt>
+                <dd class="text-end">{{ ({manual: 'opencolibri_dev_kit.ui.manual_catalog', import: 'opencolibri_dev_kit.ui.imported_zip', ai: 'opencolibri_dev_kit.ui.ai_catalog', existing: 'opencolibri_dev_kit.ui.existing_site'}[dataset.source] ?? dataset.source)|trans }}</dd>
+            {% endif %}
             {% if dataset.theme is defined and dataset.theme %}
                 <dt class="text-muted-foreground">{{ 'opencolibri_dev_kit.ui.made_for_theme'|trans }}</dt><dd class="text-end">{{ dataset.theme|replace({'_': ' '})|title }}</dd>
             {% endif %}
