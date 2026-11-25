@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OpenColibri\Starter\DevKitBundle\Form;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -42,6 +43,12 @@ final class DatasetExistingType extends AbstractType
                 'data' => 100,
                 'attr' => ['min' => 1],
                 'constraints' => [new Range(min: 1, max: 500)],
+            ])
+            ->add('images', CheckboxType::class, [
+                'label' => 'Download the images',
+                'help' => 'Uncheck to add them by hand, or to download them later from the dataset page: the products keep their image URL.',
+                'required' => false,
+                'data' => true,
             ])
         ;
     }

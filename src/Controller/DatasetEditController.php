@@ -137,17 +137,18 @@ final class DatasetEditController extends AbstractController
         $page += ['submit' => 'opencolibri_dev_kit.ui.build_dataset', 'submit_icon' => 'lucide:hammer'];
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var array{name: string, description: ?string, url: ?string, limit: int} $data */
+            /** @var array{name: string, description: ?string, url: ?string, limit: int, images: bool} $data */
             $data = $form->getData();
 
             try {
+                // A flag is only sent when set: castor-api turns false into a --no-skip-images option the task lacks.
                 $started = $this->castorApi->start('sylius:dataset:build', [
                     'source' => $source,
                     'name' => $data['name'],
                     'description' => (string) $data['description'],
                     'url' => (string) $data['url'],
                     'limit' => $data['limit'],
-                ]);
+                ] + ($data['images'] ? [] : ['skip-images' => true]));
             } catch (RunConflictException $exception) {
                 $form->addError(new FormError(\sprintf(
                     '"%s" is still running. Wait for it to finish before building a dataset.',
@@ -209,6 +210,36 @@ final class DatasetEditController extends AbstractController
         }
 
         return $this->renderForm($form, $page);
+    }
+
+    /**
+     * Downloads or generates the images the products and collections lack (their image URL or prompt), in the tasks
+     * panel of the dataset page.
+     */
+    #[Route('/catalog/{slug}/images', name: 'opencolibri_dev_kit_dataset_images', requirements: ['slug' => self::SLUG], methods: ['POST'])]
+    public function images(Request $request, string $slug): Response
+    {
+        $this->editableDataset($slug);
+
+        if (!$this->isCsrfTokenValid('dataset_images_' . $slug, $request->request->getString('_token'))) {
+            $this->addFlash('error', 'Invalid form submission.');
+
+            return $this->redirectToDataset($slug);
+        }
+
+        try {
+            $started = $this->castorApi->start('sylius:dataset:images', ['dataset' => $slug]);
+        } catch (RunConflictException $exception) {
+            $this->addFlash('error', \sprintf('"%s" is still running on this dataset: wait for it to finish.', RunDescription::label((string) ($exception->conflict['task'] ?? ''))));
+
+            return $this->redirectToDataset($slug);
+        } catch (\RuntimeException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+
+            return $this->redirectToDataset($slug);
+        }
+
+        return $this->redirectToRoute('opencolibri_dev_kit_dataset_show', ['slug' => $slug, 'run' => $started['id'], 'task' => $started['task']]);
     }
 
     #[Route('/catalog/{slug}/delete', name: 'opencolibri_dev_kit_dataset_delete', requirements: ['slug' => self::SLUG], methods: ['POST', 'DELETE'])]
@@ -320,6 +351,7 @@ final class DatasetEditController extends AbstractController
         ] : ['collection' => \in_array($collection, $choices, true) ? $collection : null], [
             'collections' => $choices,
             'has_image' => null !== ($product['image'] ?? null),
+            'is_new' => null === $product,
         ]);
         $form->handleRequest($request);
         $page = [

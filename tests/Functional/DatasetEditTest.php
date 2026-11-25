@@ -56,6 +56,36 @@ final class DatasetEditTest extends WebTestCase
         static::assertSame(['source' => 'ai', 'name' => 'Tea House', 'description' => 'Loose leaf teas and tea ware', 'url' => '', 'limit' => 12], $call['payload']);
     }
 
+    public function testTheImagesCanBeLeftForLater(): void
+    {
+        $client = static::createAdminClient();
+        $client->request('GET', '/catalog/new/ai');
+        self::assertCheckboxChecked('dataset_ai[images]');
+
+        $client->submitForm('Build dataset', [
+            'dataset_ai[name]' => 'Tea House',
+            'dataset_ai[description]' => 'Teas',
+            'dataset_ai[images]' => false,
+        ]);
+
+        self::assertResponseRedirects();
+        static::assertTrue(FakeCastorApi::calls('sylius:dataset:build')[0]['payload']['skip-images']);
+    }
+
+    public function testItFetchesTheMissingImagesOfADataset(): void
+    {
+        $client = static::createAdminClient();
+        $crawler = $client->request('GET', '/catalog/my-catalog');
+
+        // The dinner plate only has the URL of its image: it is downloaded.
+        self::assertSelectorTextContains('form[action="/catalog/my-catalog/images"] button', 'Download the missing image');
+        $client->submit($crawler->filter('form[action="/catalog/my-catalog/images"]')->form());
+
+        self::assertResponseRedirects('/catalog/my-catalog?run=run-1&task=sylius:dataset:images');
+        static::assertSame(['dataset' => 'my-catalog'], FakeCastorApi::calls('sylius:dataset:images')[0]['payload']);
+        static::assertSame('start', FakeCastorApi::calls('sylius:dataset:images')[0]['action']);
+    }
+
     public function testItImportsAnExistingWebsite(): void
     {
         $client = static::createAdminClient();
@@ -185,6 +215,19 @@ final class DatasetEditTest extends WebTestCase
         ]);
         self::assertResponseRedirects('/catalog/my-catalog/products/new?collection=Plates');
         static::assertArrayNotHasKey('index', FakeCastorApi::calls('sylius:dataset:product')[0]['payload']);
+    }
+
+    public function testAProductWithoutImageIsEditedWithoutUploadingOne(): void
+    {
+        // The dinner plate only has the URL of its image: its price changes, the image can come later.
+        $client = static::createAdminClient();
+        $client->request('GET', '/catalog/my-catalog/products/2/edit');
+        $client->submitForm('Save', ['dataset_product[price]' => '7.5']);
+
+        self::assertResponseRedirects('/catalog/my-catalog');
+        $payload = FakeCastorApi::calls('sylius:dataset:product')[0]['payload'];
+        static::assertSame('7.5', $payload['price']);
+        static::assertArrayNotHasKey('image', $payload);
     }
 
     public function testAnUploadThatIsNotAnImageIsRefused(): void

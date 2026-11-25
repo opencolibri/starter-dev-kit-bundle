@@ -12,7 +12,7 @@ final readonly class DatasetCatalog
 {
     /**
      * @param list<array{index: int, name: string, key: string, parent: string|null, description: string|null, image: string|null, productCount: int}>                $collections
-     * @param list<array{index: int, title: string, description: string|null, collection: string|null, collectionKey: string|null, price: float|null, image: string|null}> $products
+     * @param list<array{index: int, title: string, description: string|null, collection: string|null, collectionKey: string|null, price: float|null, image: string|null, imageSource: 'url'|'prompt'|null}> $products
      */
     public function __construct(
         public array $collections,
@@ -20,7 +20,7 @@ final readonly class DatasetCatalog
     ) {}
 
     /**
-     * @return list<array{index: int, title: string, description: string|null, collection: string|null, collectionKey: string|null, price: float|null, image: string|null}>
+     * @return list<array{index: int, title: string, description: string|null, collection: string|null, collectionKey: string|null, price: float|null, image: string|null, imageSource: 'url'|'prompt'|null}>
      */
     public function productsOf(?string $collection): array
     {
@@ -32,7 +32,7 @@ final readonly class DatasetCatalog
     }
 
     /**
-     * @return array{index: int, title: string, description: string|null, collection: string|null, collectionKey: string|null, price: float|null, image: string|null}|null
+     * @return array{index: int, title: string, description: string|null, collection: string|null, collectionKey: string|null, price: float|null, image: string|null, imageSource: 'url'|'prompt'|null}|null
      */
     public function product(int $index): ?array
     {
@@ -81,5 +81,23 @@ final readonly class DatasetCatalog
         }
 
         return $choices;
+    }
+
+    /**
+     * The products whose image sylius:dataset:images can store, by where it comes from.
+     *
+     * @return array{prompt: int, url: int}
+     */
+    public function fetchableImages(): array
+    {
+        $counts = ['prompt' => 0, 'url' => 0];
+
+        foreach ($this->products as $product) {
+            if (null !== $product['imageSource']) {
+                ++$counts[$product['imageSource']];
+            }
+        }
+
+        return $counts;
     }
 }

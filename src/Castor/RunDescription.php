@@ -12,6 +12,7 @@ final class RunDescription
     private const TASK_LABELS = [
         'dev-kit:apply' => 'Apply changes',
         'sylius:dataset:build' => 'Build dataset',
+        'sylius:dataset:images' => 'Fetch dataset images',
     ];
 
     public static function label(string $task): string

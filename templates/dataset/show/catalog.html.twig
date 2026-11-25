@@ -6,6 +6,7 @@
 {% set editable = not (hookable_metadata.context.dataset.builtIn ?? true) %}
 {% from '@SyliusShadcnAdminUi/shared/helper/ui.html.twig' import button_class %}
 {% set add_class = button_class('default', 'sm') %}
+{% set fetch_class = button_class('outline', 'sm') %}
 
 <twig:shadcn:Card>
     <twig:shadcn:Card:Header>
@@ -14,7 +15,20 @@
             {{- (editable ? 'opencolibri_dev_kit.ui.dataset_products_editable_description' : 'opencolibri_dev_kit.ui.dataset_products_description')|trans -}}
         </twig:shadcn:Card:Description>
         {% if editable %}
-            <twig:shadcn:Card:Action>
+            {# The images sylius:dataset:images can store: generated from their prompt, or downloaded from their URL. #}
+            {% set fetchable = catalog ? catalog.fetchableImages : {prompt: 0, url: 0} %}
+            {% set missing = fetchable.prompt + fetchable.url %}
+            {% set fetch_label = fetchable.url == 0 ? 'generate_missing_images' : (fetchable.prompt == 0 ? 'download_missing_images' : 'fetch_missing_images') %}
+            <twig:shadcn:Card:Action class="flex flex-wrap justify-end gap-2">
+                {% if missing > 0 %}
+                    {# Downloads or generates them from their URL or prompt (sylius:dataset:images), followed in the tasks panel. #}
+                    <form method="post" action="{{ path('opencolibri_dev_kit_dataset_images', {slug: slug}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('dataset_images_' ~ slug) }}">
+                        <button type="submit" class="{{ fetch_class }}" title="{{ ('opencolibri_dev_kit.ui.' ~ fetch_label ~ '_help')|trans }}">
+                            {{ ux_icon('lucide:image-down', {'data-icon': 'inline-start', 'aria-hidden': 'true'}) }}{{ ('opencolibri_dev_kit.ui.' ~ fetch_label)|trans({'%count%': missing}) }}
+                        </button>
+                    </form>
+                {% endif %}
                 <a class="{{ add_class }}" href="{{ path('opencolibri_dev_kit_dataset_product_new', {slug: slug}|merge(current ? {collection: (catalog.collections|filter(c => c.name == current)|first).key|default(current)} : {})) }}">
                     {{ ux_icon('lucide:plus', {'data-icon': 'inline-start', 'aria-hidden': 'true'}) }}{{ 'opencolibri_dev_kit.ui.add_product'|trans }}
                 </a>

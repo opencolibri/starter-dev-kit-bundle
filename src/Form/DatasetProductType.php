@@ -44,12 +44,17 @@ final class DatasetProductType extends AbstractType
                 'attr' => ['rows' => 5],
             ])
             ->add('image', FileType::class, [
-                'label' => $options['has_image'] ? 'Image (optional — keeps the current one if empty)' : 'Image',
-                'required' => !$options['has_image'],
+                'label' => match (true) {
+                    $options['has_image'] => 'Image (optional — keeps the current one if empty)',
+                    $options['is_new'] => 'Image',
+                    default => 'Image (optional — or fetch it from the dataset page, from its URL or prompt)',
+                },
+                // A new product needs one; an existing one without (built with --skip-images) gets it now or later.
+                'required' => $options['is_new'],
                 'attr' => ['accept' => 'image/jpeg,image/png,image/gif,image/webp,image/avif'],
                 'constraints' => [
                     new File(maxSize: '10M'),
-                    ...($options['has_image'] ? [] : [new NotBlank(message: 'Every product needs an image.')]),
+                    ...($options['is_new'] ? [new NotBlank(message: 'Every product needs an image.')] : []),
                 ],
             ])
         ;
@@ -58,9 +63,10 @@ final class DatasetProductType extends AbstractType
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver
-            ->setDefaults(['collections' => [], 'has_image' => false])
+            ->setDefaults(['collections' => [], 'has_image' => false, 'is_new' => false])
             ->setAllowedTypes('collections', 'array')
             ->setAllowedTypes('has_image', 'bool')
+            ->setAllowedTypes('is_new', 'bool')
         ;
     }
 }
