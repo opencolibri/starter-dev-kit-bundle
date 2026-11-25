@@ -42,43 +42,18 @@ dev-kit admin (this bundle) ──HTTP──▶ castor-api ──▶ dev-kit:* t
 
 ## Run it locally
 
-At the root of the project (the colibri-starter checkout, or a project that imports `composer://jeromegxj/castor-api`
-in its `castor.php`):
+In a project with `opencolibri/starter-dev-kit` (the [Colibri Starter skeleton](https://github.com/opencolibri/starter-skeleton)
+has it), `castor dev-kit:init` installs the admin: a small Symfony app (AssetMapper, Tailwind) in `dev-kit/`, copied
+from `src/DevKit/resources/admin/`, run as a Symfony service of the stack (`castor docker:service:install dev-kit`
+alone). It has no login, it only drives the local shop of the developer.
 
 ```bash
-castor up                          # the Sylius stack
-castor api:serve-development       # castor-api, on http://127.0.0.1:8080
+castor dev-kit:init                # starter.yaml, then the admin on https://dev-kit.<shop domain>/
+castor api:serve-development       # castor-api, on http://127.0.0.1:8080, which the admin reaches through host.docker.internal
 ```
 
-Then an instance: a small Symfony app (AssetMapper, Tailwind) next to the project, run on the host. Set it up like a
-sales kit instance (Flex bundles, the Sylius Admin UI firewall, `assets/styles/admin.css` importing
-`vendor/opencolibri/starter-dev-kit-bundle/assets/styles/dev-kit.css`, an `admin` importmap entrypoint), with:
-
-```yaml
-# config/packages/opencolibri_dev_kit.yaml
-imports:
-    - { resource: '@OpenColibriStarterDevKitBundle/config/app.php' }
-
-opencolibri_dev_kit: ~
-```
-
-```yaml
-# config/routes.yaml
-sylius_admin_ui:
-    resource: '@SyliusAdminUiBundle/config/routes.php'
-opencolibri_dev_kit:
-    resource: '@OpenColibriStarterDevKitBundle/config/routes.php'
-live_component:
-    resource: '@LiveComponentBundle/config/routes.php'
-    prefix: '/_components'
-```
-
-```bash
-php bin/console tailwind:build
-php -S 127.0.0.1:8091 -t public
-```
-
-On macOS, sign the Tailwind binary the bundle downloads if it gets killed: `codesign --force --sign - var/tailwind/*/tailwindcss-*`.
+`dev-kit/.env.local` holds its settings: `CASTOR_API_URL`, `CASTOR_API_TOKEN`, `DEV_KIT_STOREFRONT_URL` and
+`DEFAULT_URI`. `import_var_dir` points to the `.castor/import/var/` of the project, which the service mounts.
 
 ## Adding a settings page
 
