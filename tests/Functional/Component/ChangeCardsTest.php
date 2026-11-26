@@ -36,6 +36,24 @@ final class ChangeCardsTest extends ComponentTestCase
         static::assertStringContainsString('No plugin matches &quot;nothing like it&quot;.', $component->render()->toString());
     }
 
+    public function testThePluginsAreGroupedAndFilteredByCategory(): void
+    {
+        $component = $this->createAdminLiveComponent('DevKit:PluginsPicker', ['state' => $this->state, 'plugins' => $this->catalog['plugins']]);
+        $crawler = $component->render()->crawler();
+
+        static::assertSame(['Security and privacy', 'Orders and customers'], $crawler->filter('h3')->each(static fn($title): string => $title->text()));
+        static::assertSame(['', 'security', 'orders'], $crawler->filter('input[name="category"]')->each(static fn($input): string => (string) $input->attr('value')));
+
+        $component->set('category', 'orders');
+        $names = $component->render()->crawler()->filter('input[name="plugins[]"]')->each(static fn($input): string => (string) $input->attr('value'));
+        static::assertSame(['refund', 'wishlist'], $names);
+
+        // The search narrows the picked category.
+        $component->set('query', 'wish');
+        $names = $component->render()->crawler()->filter('input[name="plugins[]"]')->each(static fn($input): string => (string) $input->attr('value'));
+        static::assertSame(['wishlist'], $names);
+    }
+
     public function testAnInstalledPluginWithoutRemoverCannotBeUnchecked(): void
     {
         $crawler = $this->createAdminLiveComponent('DevKit:PluginsPicker', ['state' => $this->state, 'plugins' => $this->catalog['plugins']])->render()->crawler();
@@ -132,13 +150,13 @@ final class ChangeCardsTest extends ComponentTestCase
         $crawler = $component->render()->crawler();
 
         static::assertSame(['General purpose', 'Food and drink'], $crawler->filter('h3')->each(static fn($title): string => $title->text()));
-        static::assertSame(['', 'general', 'food'], $crawler->filter('input[name="theme_category"]')->each(static fn($input): string => (string) $input->attr('value')));
+        static::assertSame(['', 'general', 'food'], $crawler->filter('input[name="category"]')->each(static fn($input): string => (string) $input->attr('value')));
         static::assertSame(['default', 'canvas', 'roastery', 'drive'], $crawler->filter('input[name="theme"]')->each(static fn($input): string => (string) $input->attr('value')));
 
         $component->set('category', 'food');
         $crawler = $component->render()->crawler();
         static::assertSame(['roastery', 'drive'], $crawler->filter('input[name="theme"]')->each(static fn($input): string => (string) $input->attr('value')));
-        static::assertSame('food', $crawler->filter('input[name="theme_category"]:checked')->attr('value'));
+        static::assertSame('food', $crawler->filter('input[name="category"]:checked')->attr('value'));
         static::assertSame([], FakeCastorApi::calls('dev-kit:apply'), 'Filtering plans nothing.');
     }
 

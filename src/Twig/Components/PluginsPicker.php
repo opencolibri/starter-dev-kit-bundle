@@ -11,7 +11,7 @@ use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 /**
- * The plugins of opencolibri/starter-plugins, searched as you type. Checked ones are installed together, in one run
+ * The plugins of opencolibri/starter-plugins, grouped and filtered by category, searched as you type. Checked ones are installed together, in one run
  * of Composer, migrations and asset build; unchecked installed ones are removed, when they have a remover. The
  * sidebar lists what changes and applies it.
  */
@@ -19,9 +19,10 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 final class PluginsPicker
 {
     use DefaultActionTrait;
+    use FiltersByCategoryTrait;
     use PlansChangeTrait;
 
-    /** @var list<array<string, mixed>> the plugins of dev-kit:catalog: name, description, removable */
+    /** @var list<array<string, mixed>> the plugins of dev-kit:catalog: name, description, removable, category */
     #[LiveProp]
     public array $plugins = [];
 
@@ -101,6 +102,23 @@ final class PluginsPicker
 
             return true;
         }));
+    }
+
+    /**
+     * @return list<array{name: string, label: ?string, description: ?string, count: int}> the categories of the plugins
+     */
+    public function getCategories(): array
+    {
+        return self::categoriesOf($this->plugins);
+    }
+
+    /**
+     * @return list<array{name: string, label: ?string, description: ?string, items: list<array<string, mixed>>}> the
+     *                                                                                                              plugins the search finds, by category
+     */
+    public function getGroups(): array
+    {
+        return $this->groupsOf($this->plugins, $this->getResults());
     }
 
     protected function change(array $state): array

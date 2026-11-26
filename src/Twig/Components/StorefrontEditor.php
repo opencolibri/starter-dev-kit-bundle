@@ -20,10 +20,8 @@ use Symfony\UX\LiveComponent\DefaultActionTrait;
 final class StorefrontEditor
 {
     use DefaultActionTrait;
+    use FiltersByCategoryTrait;
     use PlansChangeTrait;
-
-    /** The category of the themes that have none in dev-kit:catalog: custom themes, or an older catalog. */
-    private const string OTHER = 'other';
 
     /** @var list<array<string, mixed>> the themes of dev-kit:catalog */
     #[LiveProp]
@@ -31,10 +29,6 @@ final class StorefrontEditor
 
     #[LiveProp(writable: true)]
     public string $theme = '';
-
-    /** The category shown, or '' for every theme. */
-    #[LiveProp(writable: true)]
-    public string $category = '';
 
     /** The wanted menu placement, used when the picked theme supports it. */
     #[LiveProp(writable: true)]
@@ -139,55 +133,19 @@ final class StorefrontEditor
     }
 
     /**
-     * The categories of the themes, in the order of dev-kit:catalog, with the number of their themes. The themes of no
-     * category (custom ones) are under "other", last.
-     *
-     * @return list<array{name: string, label: ?string, description: ?string, count: int}>
+     * @return list<array{name: string, label: ?string, description: ?string, count: int}> the categories of the themes
      */
     public function getCategories(): array
     {
-        $categories = [];
-
-        foreach ($this->themes as $theme) {
-            $category = self::categoryOf($theme);
-            $categories[$category['name']] ??= $category + ['count' => 0];
-            ++$categories[$category['name']]['count'];
-        }
-
-        if (isset($categories[self::OTHER])) {
-            $other = $categories[self::OTHER];
-            unset($categories[self::OTHER]);
-            $categories[self::OTHER] = $other;
-        }
-
-        return array_values($categories);
+        return self::categoriesOf($this->themes);
     }
 
     /**
-     * The themes shown, by category: those of the picked one, or all of them.
-     *
-     * @return list<array{name: string, label: ?string, description: ?string, themes: list<array<string, mixed>>}>
+     * @return list<array{name: string, label: ?string, description: ?string, items: list<array<string, mixed>>}> the themes shown, by category
      */
     public function getGroups(): array
     {
-        $categories = $this->getCategories();
-        // An unknown category (gone from the catalog) shows every theme.
-        $picked = \in_array($this->category, array_column($categories, 'name'), true) ? $this->category : '';
-        $groups = [];
-
-        foreach ($categories as $category) {
-            if ('' !== $picked && $category['name'] !== $picked) {
-                continue;
-            }
-
-            unset($category['count']);
-            $groups[] = $category + ['themes' => array_values(array_filter(
-                $this->themes,
-                static fn(array $theme): bool => self::categoryOf($theme)['name'] === $category['name'],
-            ))];
-        }
-
-        return $groups;
+        return $this->groupsOf($this->themes, $this->themes);
     }
 
     protected function change(array $state): array
@@ -222,26 +180,6 @@ final class StorefrontEditor
         $state['theme'] = ['name' => $this->theme] + ([] !== $kept ? ['header' => $kept] : []);
 
         return $state;
-    }
-
-    /**
-     * @param array<string, mixed> $theme
-     *
-     * @return array{name: string, label: ?string, description: ?string}
-     */
-    private static function categoryOf(array $theme): array
-    {
-        $category = $theme['category'] ?? null;
-
-        if (!\is_array($category) || !\is_string($category['name'] ?? null) || '' === $category['name']) {
-            return ['name' => self::OTHER, 'label' => null, 'description' => null];
-        }
-
-        return [
-            'name' => $category['name'],
-            'label' => \is_string($category['label'] ?? null) ? $category['label'] : null,
-            'description' => \is_string($category['description'] ?? null) ? $category['description'] : null,
-        ];
     }
 
     /**

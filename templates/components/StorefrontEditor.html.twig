@@ -21,33 +21,20 @@
                     <twig:shadcn:Card:Description>{{ 'opencolibri_dev_kit.ui.storefront_theme_description'|trans }}</twig:shadcn:Card:Description>
                 </twig:shadcn:Card:Header>
                 <twig:shadcn:Card:Content class="flex flex-col gap-4">
-                    {% if categorized %}
-                        <fieldset>
-                            <legend class="sr-only">{{ 'opencolibri_dev_kit.ui.theme_category'|trans }}</legend>
-                            <div class="flex flex-wrap gap-2">
-                                {% for item in [{name: '', label: 'opencolibri_dev_kit.ui.all_themes'|trans, count: themes|length}]|merge(this_categories) %}
-                                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-primary-foreground has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50">
-                                        <input type="radio" name="theme_category" value="{{ item.name }}" data-model="category" class="sr-only"{% if item.name == picked_category %} checked{% endif %}>
-                                        {{ item.label ?? 'opencolibri_dev_kit.ui.other_themes'|trans }}
-                                        <span class="text-xs opacity-70">{{ item.count }}</span>
-                                    </label>
-                                {% endfor %}
-                            </div>
-                        </fieldset>
-                    {% endif %}
+                    {{ component('dev_kit:category_filter', {categories: this_categories, picked: picked_category, total: themes|length, legend: 'opencolibri_dev_kit.ui.theme_category'|trans}) }}
                     <fieldset class="@container flex flex-col gap-5">
                         <legend class="sr-only">{{ 'opencolibri_dev_kit.ui.theme'|trans }}</legend>
-                        {% set groups = picked_category == '' ? [{name: 'default', label: null, description: null, themes: [{name: 'default'}]}]|merge(this_groups) : this_groups %}
+                        {% set groups = picked_category == '' ? [{name: 'default', label: null, description: null, items: [{name: 'default'}]}]|merge(this_groups) : this_groups %}
                         {% for group in groups %}
                             <section class="flex flex-col gap-2"{% if categorized and group.name != 'default' %} aria-labelledby="theme-category-{{ group.name }}"{% endif %}>
                                 {% if categorized and group.name != 'default' %}
                                     <div>
-                                        <h3 id="theme-category-{{ group.name }}" class="text-sm font-semibold">{{ group.label ?? 'opencolibri_dev_kit.ui.other_themes'|trans }}</h3>
+                                        <h3 id="theme-category-{{ group.name }}" class="text-sm font-semibold">{{ group.label ?? 'opencolibri_dev_kit.ui.other_category'|trans }}</h3>
                                         {% if group.description %}<p class="text-sm text-muted-foreground">{{ group.description }}</p>{% endif %}
                                     </div>
                                 {% endif %}
                                 <div class="grid grid-cols-2 gap-3 @xl:grid-cols-3 @4xl:grid-cols-4 @6xl:grid-cols-5">
-                                    {% for item in group.themes %}
+                                    {% for item in group.items %}
                                         <label class="group flex cursor-pointer flex-col gap-1.5 rounded-lg border p-1.5 transition-colors hover:bg-accent has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/30 has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50">
                                             <input type="radio" name="theme" value="{{ item.name }}" data-model="theme" class="sr-only"{% if item.name == theme %} checked{% endif %}>
                                             {{ include('@OpenColibriStarterDevKit/components/ui/theme_thumbnail.html.twig', {name: item.name}) }}
