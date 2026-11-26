@@ -14,10 +14,10 @@ final class SettingsTest extends WebTestCase
      */
     public static function pages(): iterable
     {
-        yield 'storefront' => ['storefront', 'Storefront', ['Storefront theme', 'Header layout']];
+        yield 'storefront' => ['storefront', 'Storefront', ['Storefront theme', 'Your storefront']];
         yield 'catalog' => ['catalog', 'Catalog', ['Catalog']];
         yield 'locales' => ['locales', 'Locales and currencies', ['Locales and currencies']];
-        yield 'plugins' => ['plugins', 'Plugins', ['Plugins']];
+        yield 'plugins' => ['plugins', 'Plugins', ['Plugins', 'Changes']];
         yield 'shop' => ['shop', 'Shop', ['Shop name']];
     }
 

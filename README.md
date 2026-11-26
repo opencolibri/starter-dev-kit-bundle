@@ -34,7 +34,7 @@ dev-kit admin (this bundle) ──HTTP──▶ castor-api ──▶ dev-kit:* t
 | Part | Where |
 |---|---|
 | castor-api client, run descriptions and progress | `src/Castor/`, `src/Import/RunProgress.php` |
-| Live components: `ThemePicker`, `HeaderLayoutPicker`, `DatasetLoader`, `ShopNameEditor`, `LocalesPicker`, `PluginsPicker` (search as you type), `StateRestorer`, `RunMonitor` | `src/Twig/Components/`, on `PlansChangeTrait` |
+| Live components: `StorefrontEditor` (theme and header layout), `DatasetLoader`, `ShopNameEditor`, `LocalesPicker`, `PluginsPicker` (search as you type), `StateRestorer`, `RunMonitor` | `src/Twig/Components/`, on `PlansChangeTrait` |
 | Anonymous components: `dev_kit:plan`, `dev_kit:action_button`, `dev_kit:message`, `dev_kit:header_preview` | `templates/components/ui/` |
 | Dashboard summary, settings pages (`/settings/{page}`, `SettingsPages`), the page of a dataset (`/catalog/{slug}`: its products by collection, read from its files), history page, theme and dataset thumbnails | `config/app.php` (hooks), `src/Settings/`, `src/Controller/`, `templates/` |
 | Data of the pages (`dev_kit_state()`, `dev_kit_catalog()`, `dev_kit_history()`) | `src/Twig/Extension/DevKitExtension.php` |

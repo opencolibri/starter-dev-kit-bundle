@@ -60,9 +60,23 @@ final class ChangeCardsTest extends ComponentTestCase
         static::assertTrue($started[0]['payload']['yes']);
     }
 
+    public function testThePluginSidebarListsWhatChangesAndDiscardsIt(): void
+    {
+        $component = $this->createAdminLiveComponent('DevKit:PluginsPicker', ['state' => $this->state, 'plugins' => $this->catalog['plugins']]);
+        static::assertStringContainsString('Check a plugin to install it', $component->render()->toString());
+
+        $component->set('selected', ['refund', 'wishlist']);
+        $html = $component->render()->toString();
+        static::assertMatchesRegularExpression('/To install.*wishlist.*To remove.*altcha/s', $html);
+        static::assertStringContainsString('2 changes', $html);
+
+        $component->call('discard');
+        static::assertSame(['altcha', 'refund'], $component->component()->selected);
+    }
+
     public function testTheHeaderLayoutAppliesWithAButtonOnly(): void
     {
-        $component = $this->createAdminLiveComponent('DevKit:HeaderLayoutPicker', ['state' => $this->state, 'themes' => $this->catalog['themes']]);
+        $component = $this->createAdminLiveComponent('DevKit:StorefrontEditor', ['state' => $this->state, 'themes' => $this->catalog['themes']]);
         $component->set('search', 'icon');
 
         static::assertSame([], array_filter(FakeCastorApi::calls('dev-kit:apply'), static fn(array $call): bool => 'start' === $call['action']));
@@ -73,13 +87,59 @@ final class ChangeCardsTest extends ComponentTestCase
 
     public function testANewThemeKeepsTheHeaderLayoutItSupports(): void
     {
-        $component = $this->createAdminLiveComponent('DevKit:ThemePicker', ['state' => $this->state, 'themes' => $this->catalog['themes']]);
+        $component = $this->createAdminLiveComponent('DevKit:StorefrontEditor', ['state' => $this->state, 'themes' => $this->catalog['themes']]);
         $component->set('theme', 'drive');
         $component->render();
 
         $wanted = json_decode((string) FakeCastorApi::calls('dev-kit:apply')[0]['payload']['manifest-json'], true, flags: \JSON_THROW_ON_ERROR);
         // Drive has no "inline" menu… but supports "below" and the inline search.
         static::assertSame(['name' => 'drive', 'header' => ['menu' => 'below', 'search' => 'inline']], $wanted['theme']);
+    }
+
+    public function testTheThemeAndItsHeaderLayoutApplyTogether(): void
+    {
+        $component = $this->createAdminLiveComponent('DevKit:StorefrontEditor', ['state' => $this->state, 'themes' => $this->catalog['themes']]);
+        $component->set('theme', 'drive');
+        $component->set('menu', 'bar');
+        $crawler = $component->render()->crawler();
+
+        $calls = FakeCastorApi::calls('dev-kit:apply');
+        $wanted = json_decode((string) end($calls)['payload']['manifest-json'], true, flags: \JSON_THROW_ON_ERROR);
+        static::assertSame(['name' => 'drive', 'header' => ['menu' => 'bar', 'search' => 'inline']], $wanted['theme']);
+        // The sidebar shows the picked theme and the placements it supports.
+        static::assertStringContainsString('Instead of Roastery', $crawler->text());
+        static::assertSame(['below', 'bar'], $crawler->filter('#header-menu option')->each(static fn($option): string => (string) $option->attr('value')));
+        static::assertSame('bar', $crawler->filter('#header-menu option[selected]')->attr('value'));
+
+        $component->call('discard');
+        static::assertSame('roastery', $component->component()->theme);
+        static::assertFalse($component->component()->hasChanges());
+    }
+
+    public function testTheCurrentThemeChangesNothing(): void
+    {
+        $component = $this->createAdminLiveComponent('DevKit:StorefrontEditor', ['state' => $this->state, 'themes' => $this->catalog['themes']]);
+        $html = $component->render()->toString();
+
+        static::assertFalse($component->component()->hasChanges());
+        static::assertStringNotContainsString('Discard', $html);
+        static::assertSame([], FakeCastorApi::calls('dev-kit:apply'));
+    }
+
+    public function testTheThemesAreGroupedAndFilteredByCategory(): void
+    {
+        $component = $this->createAdminLiveComponent('DevKit:StorefrontEditor', ['state' => $this->state, 'themes' => $this->catalog['themes']]);
+        $crawler = $component->render()->crawler();
+
+        static::assertSame(['General purpose', 'Food and drink'], $crawler->filter('h3')->each(static fn($title): string => $title->text()));
+        static::assertSame(['', 'general', 'food'], $crawler->filter('input[name="theme_category"]')->each(static fn($input): string => (string) $input->attr('value')));
+        static::assertSame(['default', 'canvas', 'roastery', 'drive'], $crawler->filter('input[name="theme"]')->each(static fn($input): string => (string) $input->attr('value')));
+
+        $component->set('category', 'food');
+        $crawler = $component->render()->crawler();
+        static::assertSame(['roastery', 'drive'], $crawler->filter('input[name="theme"]')->each(static fn($input): string => (string) $input->attr('value')));
+        static::assertSame('food', $crawler->filter('input[name="theme_category"]:checked')->attr('value'));
+        static::assertSame([], FakeCastorApi::calls('dev-kit:apply'), 'Filtering plans nothing.');
     }
 
     public function testTheBaseCurrencyComesFirst(): void

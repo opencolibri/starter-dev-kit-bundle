@@ -1,0 +1,117 @@
+{# Read before the nested components: inside <twig:shadcn:Card> or dev_kit:changes, "this" is that component. #}
+{% set this_current = this.current %}
+{% set this_plan = this.plan %}
+{% set this_changed = this.hasChanges %}
+{% set this_picked = this.picked %}
+{% set this_placements = this.placements %}
+{% set this_header = this.header %}
+{% set this_current_header = this.currentHeader %}
+{% set this_categories = this.categories %}
+{% set this_groups = this.groups %}
+{% set categorized = this_categories|length > 1 %}
+{% set picked_category = category in this_categories|column('name') ? category : '' %}
+{% set label_of = {default: 'opencolibri_dev_kit.ui.default_theme'|trans} %}
+{% for item in themes %}{% set label_of = label_of|merge({(item.name): item.label|default(item.name|replace({'_': ' '})|title)}) %}{% endfor %}
+<div {{ attributes }}>
+    <div class="grid items-start gap-6 lg:grid-cols-4">
+        <div class="min-w-0 lg:col-span-3">
+            <twig:shadcn:Card>
+                <twig:shadcn:Card:Header>
+                    <twig:shadcn:Card:Title>{{ 'opencolibri_dev_kit.ui.storefront_theme'|trans }}</twig:shadcn:Card:Title>
+                    <twig:shadcn:Card:Description>{{ 'opencolibri_dev_kit.ui.storefront_theme_description'|trans }}</twig:shadcn:Card:Description>
+                </twig:shadcn:Card:Header>
+                <twig:shadcn:Card:Content class="flex flex-col gap-4">
+                    {% if categorized %}
+                        <fieldset>
+                            <legend class="sr-only">{{ 'opencolibri_dev_kit.ui.theme_category'|trans }}</legend>
+                            <div class="flex flex-wrap gap-2">
+                                {% for item in [{name: '', label: 'opencolibri_dev_kit.ui.all_themes'|trans, count: themes|length}]|merge(this_categories) %}
+                                    <label class="inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors hover:bg-accent has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-primary-foreground has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50">
+                                        <input type="radio" name="theme_category" value="{{ item.name }}" data-model="category" class="sr-only"{% if item.name == picked_category %} checked{% endif %}>
+                                        {{ item.label ?? 'opencolibri_dev_kit.ui.other_themes'|trans }}
+                                        <span class="text-xs opacity-70">{{ item.count }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </fieldset>
+                    {% endif %}
+                    <fieldset class="@container flex flex-col gap-5">
+                        <legend class="sr-only">{{ 'opencolibri_dev_kit.ui.theme'|trans }}</legend>
+                        {% set groups = picked_category == '' ? [{name: 'default', label: null, description: null, themes: [{name: 'default'}]}]|merge(this_groups) : this_groups %}
+                        {% for group in groups %}
+                            <section class="flex flex-col gap-2"{% if categorized and group.name != 'default' %} aria-labelledby="theme-category-{{ group.name }}"{% endif %}>
+                                {% if categorized and group.name != 'default' %}
+                                    <div>
+                                        <h3 id="theme-category-{{ group.name }}" class="text-sm font-semibold">{{ group.label ?? 'opencolibri_dev_kit.ui.other_themes'|trans }}</h3>
+                                        {% if group.description %}<p class="text-sm text-muted-foreground">{{ group.description }}</p>{% endif %}
+                                    </div>
+                                {% endif %}
+                                <div class="grid grid-cols-2 gap-3 @xl:grid-cols-3 @4xl:grid-cols-4 @6xl:grid-cols-5">
+                                    {% for item in group.themes %}
+                                        <label class="group flex cursor-pointer flex-col gap-1.5 rounded-lg border p-1.5 transition-colors hover:bg-accent has-[:checked]:border-primary has-[:checked]:ring-2 has-[:checked]:ring-primary/30 has-[:focus-visible]:ring-[3px] has-[:focus-visible]:ring-ring/50">
+                                            <input type="radio" name="theme" value="{{ item.name }}" data-model="theme" class="sr-only"{% if item.name == theme %} checked{% endif %}>
+                                            {{ include('@OpenColibriStarterDevKit/components/ui/theme_thumbnail.html.twig', {name: item.name}) }}
+                                            <span class="flex items-center justify-between gap-2 px-0.5 text-sm font-medium">
+                                                <span class="truncate">{{ label_of[item.name] }}</span>
+                                                {% if item.name == this_current %}
+                                                    <twig:shadcn:Badge variant="secondary">{{ 'opencolibri_dev_kit.ui.current'|trans }}</twig:shadcn:Badge>
+                                                {% endif %}
+                                            </span>
+                                        </label>
+                                    {% endfor %}
+                                </div>
+                            </section>
+                        {% endfor %}
+                    </fieldset>
+                </twig:shadcn:Card:Content>
+            </twig:shadcn:Card>
+        </div>
+        <div class="min-w-0 lg:sticky lg:top-18">
+            {% set summary %}
+                {% set shown = theme != '' ? theme : 'default' %}
+                <div class="flex flex-col gap-2">
+                    {{ include('@OpenColibriStarterDevKit/components/ui/theme_thumbnail.html.twig', {name: shown}) }}
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="font-medium">{{ label_of[shown] ?? shown }}</span>
+                        {% if shown == this_current %}
+                            <twig:shadcn:Badge variant="secondary">{{ 'opencolibri_dev_kit.ui.current'|trans }}</twig:shadcn:Badge>
+                        {% else %}
+                            <twig:shadcn:Badge>{{ 'opencolibri_dev_kit.ui.new'|trans }}</twig:shadcn:Badge>
+                        {% endif %}
+                    </div>
+                    {% if shown != this_current and this_current %}
+                        <p class="text-xs text-muted-foreground">{{ 'opencolibri_dev_kit.ui.instead_of'|trans({'%name%': label_of[this_current] ?? this_current}) }}</p>
+                    {% endif %}
+                </div>
+                <div class="flex flex-col gap-3 border-t pt-4">
+                    <div class="flex flex-col gap-0.5">
+                        <span class="font-medium">{{ 'opencolibri_dev_kit.ui.header_layout'|trans }}</span>
+                        <span class="text-xs text-muted-foreground">
+                            {{- (this_placements ? 'opencolibri_dev_kit.ui.header_layout_description' : 'opencolibri_dev_kit.ui.header_layout_default_theme')|trans -}}
+                        </span>
+                    </div>
+                    {% if this_placements %}
+                        {{ component('dev_kit:header_preview', {menu: this_header.menu, search: this_header.search}) }}
+                        <div class="flex flex-col gap-1.5">
+                            <twig:shadcn:Label for="header-menu">{{ 'opencolibri_dev_kit.ui.header_menu'|trans }}</twig:shadcn:Label>
+                            <twig:shadcn:NativeSelect id="header-menu" data-model="menu">
+                                {% for item in this_placements.menus %}
+                                    <option value="{{ item }}"{% if item == this_header.menu %} selected{% endif %}>{{ ('opencolibri_dev_kit.ui.header_menu_' ~ item)|trans }}{% if shown == this_current and item == this_current_header.menu|default %} ({{ 'opencolibri_dev_kit.ui.current'|trans }}){% endif %}</option>
+                                {% endfor %}
+                            </twig:shadcn:NativeSelect>
+                        </div>
+                        <div class="flex flex-col gap-1.5">
+                            <twig:shadcn:Label for="header-search">{{ 'opencolibri_dev_kit.ui.header_search'|trans }}</twig:shadcn:Label>
+                            <twig:shadcn:NativeSelect id="header-search" data-model="search">
+                                {% for item in this_placements.searches %}
+                                    <option value="{{ item }}"{% if item == this_header.search %} selected{% endif %}>{{ ('opencolibri_dev_kit.ui.header_search_' ~ item)|trans }}{% if shown == this_current and item == this_current_header.search|default %} ({{ 'opencolibri_dev_kit.ui.current'|trans }}){% endif %}</option>
+                                {% endfor %}
+                            </twig:shadcn:NativeSelect>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endset %}
+            {{ component('dev_kit:changes', {title: 'opencolibri_dev_kit.ui.your_storefront'|trans, plan: this_plan, error: error, changed: this_changed, count: this_changed ? 1 : 0, summary: summary}) }}
+        </div>
+    </div>
+</div>

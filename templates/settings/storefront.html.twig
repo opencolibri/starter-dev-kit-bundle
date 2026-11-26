@@ -1,6 +1,5 @@
 {% set state = dev_kit_state() %}
 {% if state is not null %}
     {% set catalog = dev_kit_catalog() %}
-    {{ component('DevKit:ThemePicker', {state: state, themes: catalog.themes}) }}
-    {{ component('DevKit:HeaderLayoutPicker', {state: state, themes: catalog.themes}) }}
+    {{ component('DevKit:StorefrontEditor', {state: state, themes: catalog.themes}) }}
 {% endif %}

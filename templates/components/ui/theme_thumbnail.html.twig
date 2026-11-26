@@ -1,0 +1,13 @@
+{#-
+ # The thumbnail of a theme in both color schemes (the one of the admin shows), or a shop icon for the Sylius look.
+ #}
+{%- if name == 'default' -%}
+    <span class="flex aspect-[8/5] items-center justify-center rounded-md bg-muted text-muted-foreground">
+        {{ ux_icon('lucide:store', {class: 'size-6', 'aria-hidden': 'true'}) }}
+    </span>
+{%- else -%}
+    <span class="block overflow-hidden rounded-md bg-muted">
+        <img src="{{ path('opencolibri_dev_kit_theme_preview', {theme: name, scheme: 'light'}) }}" alt="" width="480" height="300" loading="lazy" class="aspect-[8/5] w-full object-cover dark:hidden">
+        <img src="{{ path('opencolibri_dev_kit_theme_preview', {theme: name, scheme: 'dark'}) }}" alt="" width="480" height="300" loading="lazy" class="hidden aspect-[8/5] w-full object-cover dark:block">
+    </span>
+{%- endif -%}

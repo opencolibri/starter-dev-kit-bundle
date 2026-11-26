@@ -6,12 +6,14 @@ namespace OpenColibri\Starter\DevKitBundle\Twig\Components;
 
 use OpenColibri\Starter\DevKitBundle\Castor\CastorApiClient;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
+use Symfony\UX\LiveComponent\Attribute\LiveAction;
 use Symfony\UX\LiveComponent\Attribute\LiveProp;
 use Symfony\UX\LiveComponent\DefaultActionTrait;
 
 /**
  * The plugins of opencolibri/starter-plugins, searched as you type. Checked ones are installed together, in one run
- * of Composer, migrations and asset build; unchecked installed ones are removed, when they have a remover.
+ * of Composer, migrations and asset build; unchecked installed ones are removed, when they have a remover. The
+ * sidebar lists what changes and applies it.
  */
 #[AsLiveComponent]
 final class PluginsPicker
@@ -43,6 +45,32 @@ final class PluginsPicker
         $this->state = $state;
         $this->plugins = $plugins;
         $this->selected = $this->getInstalled();
+    }
+
+    /**
+     * Back to the installed plugins. The search stays.
+     */
+    #[LiveAction]
+    public function discard(): void
+    {
+        $this->selected = $this->getInstalled();
+        $this->error = null;
+    }
+
+    /**
+     * @return list<string> the checked plugins that are not installed, in the order of the catalog
+     */
+    public function getToInstall(): array
+    {
+        return array_values(array_diff(array_intersect(array_column($this->plugins, 'name'), $this->selected), $this->getInstalled()));
+    }
+
+    /**
+     * @return list<string> the installed plugins of the catalog that are unchecked
+     */
+    public function getToRemove(): array
+    {
+        return array_values(array_diff(array_intersect($this->getInstalled(), array_column($this->plugins, 'name')), $this->selected));
     }
 
     /**

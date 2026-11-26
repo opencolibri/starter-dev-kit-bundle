@@ -63,7 +63,7 @@ final class OpenColibriStarterDevKitBundle extends AbstractBundle
 
     public function prependExtension(ContainerConfigurator $container, ContainerBuilder $builder): void
     {
-        // <twig:DevKit:RunMonitor />, component('DevKit:ThemePicker')...
+        // <twig:DevKit:RunMonitor />, component('DevKit:StorefrontEditor')...
         $builder->prependExtensionConfig('twig_component', [
             // Required by TwigComponent, set by its Flex recipe: the instance may set its own.
             'anonymous_template_directory' => 'components/',

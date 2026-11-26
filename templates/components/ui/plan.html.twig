@@ -1,8 +1,9 @@
 {#-
  # The plan of dev-kit:apply for the change of a card: its steps with their cost, the errors that block it, and the
  # button that runs it (the "apply" LiveAction of the card). Renders nothing while the card changes nothing.
+ # "compact" folds the commands, for a sidebar.
  #}
-{%- props plan = null, error = null -%}
+{%- props plan = null, error = null, compact = false -%}
 {%- set costs = {
     instant: ['secondary', 'opencolibri_dev_kit.cost.instant'],
     short: ['secondary', 'opencolibri_dev_kit.cost.short'],
@@ -32,7 +33,14 @@
                                 {% for detail in step.details %}<li>{{ detail }}</li>{% endfor %}
                             </ul>
                         {% endif %}
-                        <code class="font-mono text-xs break-all text-muted-foreground">{{ step.command }}</code>
+                        {% if compact %}
+                            <details class="text-xs text-muted-foreground">
+                                <summary class="cursor-pointer select-none">{{ 'opencolibri_dev_kit.ui.command'|trans }}</summary>
+                                <code class="mt-1 block font-mono break-all">{{ step.command }}</code>
+                            </details>
+                        {% else %}
+                            <code class="font-mono text-xs break-all text-muted-foreground">{{ step.command }}</code>
+                        {% endif %}
                     </li>
                 {% endfor %}
             </ol>

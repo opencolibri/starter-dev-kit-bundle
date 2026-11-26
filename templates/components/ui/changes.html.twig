@@ -1,0 +1,34 @@
+{#-
+ # The sidebar of a settings page: what the change of its live component picks ("summary", HTML the component
+ # captures), then the plan of dev-kit:apply with its Apply button, and a Discard button calling the "discard"
+ # LiveAction. Its column sticks below the header bar (lg:sticky lg:top-18); below lg, a bar at the bottom of the
+ # screen leads to it while there is a change.
+ #}
+{%- props title, summary = '', plan = null, error = null, changed = false, count = 0 -%}
+<div id="dev-kit-changes" class="flex scroll-mt-18 flex-col gap-6">
+    <twig:shadcn:Card>
+        <twig:shadcn:Card:Header>
+            <twig:shadcn:Card:Title>{{ title }}</twig:shadcn:Card:Title>
+        </twig:shadcn:Card:Header>
+        <twig:shadcn:Card:Content class="flex flex-col gap-4 text-sm">
+            {{ summary }}
+            {{ component('dev_kit:plan', {plan: plan, error: error, compact: true}) }}
+            {% if changed %}
+                <div>
+                    {{ component('dev_kit:action_button', {action: 'discard', label: 'opencolibri_dev_kit.ui.discard'|trans, variant: 'ghost', size: 'sm', icon: 'lucide:undo-2'}) }}
+                </div>
+            {% endif %}
+        </twig:shadcn:Card:Content>
+    </twig:shadcn:Card>
+</div>
+{% if changed %}
+    {# Room for the bar below, so that it does not cover the end of the sidebar. #}
+    <div class="h-14 lg:hidden" aria-hidden="true"></div>
+    <div class="fixed inset-x-0 bottom-0 z-30 flex items-center justify-between gap-3 border-t bg-background/95 px-4 py-3 text-sm backdrop-blur lg:hidden">
+        <span class="font-medium">{{ 'opencolibri_dev_kit.ui.pending_changes'|trans({'%count%': count}) }}</span>
+        <a href="#dev-kit-changes" class="inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 font-medium text-primary-foreground">
+            {{ 'opencolibri_dev_kit.ui.review_changes'|trans }}
+            {{ ux_icon('lucide:arrow-down', {class: 'size-4', 'aria-hidden': 'true'}) }}
+        </a>
+    </div>
+{% endif %}
